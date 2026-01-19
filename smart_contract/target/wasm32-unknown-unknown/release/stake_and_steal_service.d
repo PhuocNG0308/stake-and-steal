@@ -1,0 +1,1 @@
+D:\Projects\Blockchain\stake-and-steal\smart_contract\target\wasm32-unknown-unknown\release\stake_and_steal_service.wasm: D:\Projects\Blockchain\stake-and-steal\smart_contract\src\lib.rs D:\Projects\Blockchain\stake-and-steal\smart_contract\src\service.rs D:\Projects\Blockchain\stake-and-steal\smart_contract\src\state.rs

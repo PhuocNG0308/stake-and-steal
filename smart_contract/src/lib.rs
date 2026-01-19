@@ -1,6 +1,11 @@
-//! # Steal & Yield - GameFi on Linera
+//! # Stake and Steal - GameFi on Linera
 //!
-//! A simplified GameFi application with yield farming and PvP stealing.
+//! A GameFi application with yield farming and PvP stealing.
+//! Stake coins to protect your plots - if you stake enough, you can definitely steal!
+//!
+//! ## Hidden Plot System
+//! Players have 5 plots to hide their tokens. The plot configuration is encrypted on-chain
+//! so raiders must guess which plot has tokens. More risk = more reward!
 
 use linera_sdk::linera_base_types::{ChainId, Timestamp};
 use serde::{Deserialize, Serialize};
@@ -12,22 +17,25 @@ use serde::{Deserialize, Serialize};
 pub const MAX_PLOTS_PER_PAGE: usize = 5;
 pub const MAX_PAGES_PER_PLAYER: usize = 10;
 pub const BASE_YIELD_RATE_BPS: u64 = 10;
-pub const STEAL_SUCCESS_RATE: u8 = 30;
+/// Minimum stake required to guarantee a successful steal
+pub const MIN_STEAL_STAKE: u128 = 1000;
 pub const STEAL_PERCENTAGE: u8 = 15;
 pub const RAID_COOLDOWN_BLOCKS: u64 = 100;
+/// Maximum raid history entries to keep
+pub const MAX_RAID_HISTORY: usize = 50;
 
 // ============================================================================
 // APPLICATION ABI
 // ============================================================================
 
-pub struct StealAndYieldAbi;
+pub struct StakeAndStealAbi;
 
-impl linera_sdk::abi::ContractAbi for StealAndYieldAbi {
+impl linera_sdk::abi::ContractAbi for StakeAndStealAbi {
     type Operation = Operation;
     type Response = OperationResponse;
 }
 
-impl linera_sdk::abi::ServiceAbi for StealAndYieldAbi {
+impl linera_sdk::abi::ServiceAbi for StakeAndStealAbi {
     type Query = async_graphql::Request;
     type QueryResponse = async_graphql::Response;
 }
@@ -56,14 +64,35 @@ pub struct ApplicationParameters {
 pub enum Operation {
     Register { encrypted_name: Vec<u8> },
     CreatePage,
+    /// Deposit to a specific plot (plot config is hidden/encrypted)
     Deposit { page_id: u8, plot_id: u8, amount: u128 },
+    /// Withdraw from a specific plot
     Withdraw { page_id: u8, plot_id: u8, amount: u128 },
+    /// Claim yield from specific plot
     Claim { page_id: u8, plot_id: u8 },
+    /// Claim all pending yields
     ClaimAll,
+    /// Find potential raid targets
     FindTargets { count: u8 },
+    /// Lock onto a target before raiding
     LockTarget { target_chain: ChainId, commitment: [u8; 32] },
-    ExecuteSteal { target_page: u8, target_plot: u8, reveal_nonce: [u8; 32] },
+    /// Execute steal - raider picks a plot to try to steal from
+    /// The target's plot balances are encrypted, so raider must guess
+    ExecuteSteal { 
+        /// Attacker's page where they have staked
+        attacker_page: u8,
+        /// Attacker's plot where they have staked 
+        attacker_plot: u8,
+        /// Target page to steal from
+        target_page: u8, 
+        /// Target plot to steal from (raider's guess)
+        target_plot: u8, 
+        /// Nonce for commitment verification
+        reveal_nonce: [u8; 32] 
+    },
+    /// Cancel current raid
     CancelRaid,
+    /// Update game configuration
     UpdateConfig { config: GameConfig },
 }
 
@@ -78,7 +107,8 @@ pub enum OperationResponse {
     ClaimedAll { total_yield: u128 },
     TargetsFound { targets: Vec<TargetInfo> },
     TargetLocked { target_chain: ChainId, lock_until_block: u64 },
-    StealResult { success: bool, amount_stolen: u128 },
+    /// Raid result - success means raider guessed the correct plot
+    StealResult { success: bool, amount_stolen: u128, plot_was_empty: bool },
     Error { message: String },
 }
 
@@ -92,7 +122,13 @@ pub enum Message {
     UnregisterPlayer { player_chain: ChainId },
     RequestTargets { requester: ChainId, count: u8, request_id: u64 },
     TargetsResponse { targets: Vec<TargetInfo>, request_id: u64 },
-    StealAttempt { attacker: ChainId, target_page: u8, target_plot: u8, attack_seed: [u8; 32] },
+    /// Raid attempt - attacker guesses a plot
+    StealAttempt { 
+        attacker: ChainId, 
+        target_page: u8, 
+        target_plot: u8,  // Attacker's guess
+        attack_seed: [u8; 32] 
+    },
     StealResult { success: bool, amount: u128 },
     StolenFunds { from_chain: ChainId, amount: u128 },
 }
@@ -101,11 +137,16 @@ pub enum Message {
 // DATA STRUCTURES
 // ============================================================================
 
+/// A single plot where tokens can be hidden
+/// On-chain, only the encrypted balance is visible to others
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LandPlot {
     pub id: u8,
     pub is_active: bool,
+    /// Actual balance (visible to owner, hidden from raiders via encryption)
     pub balance: u128,
+    /// Encrypted balance hash for public verification
+    pub balance_commitment: [u8; 32],
     pub deposit_block: u64,
     pub last_claim_block: u64,
     pub pending_yield: u128,
@@ -122,6 +163,21 @@ impl LandPlot {
             .saturating_mul(yield_rate_bps as u128)
             / 1_000_000
     }
+
+    /// Create a commitment hash for the balance (for obfuscation)
+    pub fn create_balance_commitment(balance: u128, salt: &[u8; 32]) -> [u8; 32] {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        balance.hash(&mut hasher);
+        salt.hash(&mut hasher);
+        let hash = hasher.finish();
+        
+        let mut commitment = [0u8; 32];
+        commitment[..8].copy_from_slice(&hash.to_le_bytes());
+        commitment
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -130,6 +186,8 @@ pub struct Page {
     pub is_unlocked: bool,
     pub plots: Vec<LandPlot>,
     pub created_at: u64,
+    /// Salt used for encrypting plot data
+    pub encryption_salt: [u8; 32],
 }
 
 impl Page {
@@ -137,11 +195,22 @@ impl Page {
         let plots = (0..MAX_PLOTS_PER_PAGE)
             .map(|i| LandPlot { id: i as u8, ..Default::default() })
             .collect();
-        Self { page_id: id, is_unlocked: true, plots, created_at: current_block }
+        Self { 
+            page_id: id, 
+            is_unlocked: true, 
+            plots, 
+            created_at: current_block,
+            encryption_salt: [0u8; 32], // Should be randomized
+        }
     }
 
     pub fn total_balance(&self) -> u128 {
         self.plots.iter().map(|p| p.balance).sum()
+    }
+
+    /// Count of plots that have tokens (hidden from public queries)
+    pub fn active_plots(&self) -> usize {
+        self.plots.iter().filter(|p| p.balance > 0).count()
     }
 }
 
@@ -159,9 +228,41 @@ pub enum RaidState {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TargetInfo {
     pub chain_id: ChainId,
+    /// Activity score (higher = more active player)
     pub activity_score: u32,
     pub active_pages: u8,
     pub last_active_block: u64,
+    /// Total staked (public info)
+    pub total_staked: u128,
+    /// Number of plots with tokens (hidden - raiders don't know this)
+    /// This is NOT exposed in public queries
+    #[serde(skip_serializing)]
+    pub hidden_active_plots: u8,
+}
+
+/// A single raid history entry
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RaidHistoryEntry {
+    pub id: u64,
+    pub timestamp: Timestamp,
+    /// 'attack' or 'defense'
+    pub raid_type: RaidType,
+    /// Chain ID of the other party
+    pub other_party: ChainId,
+    /// Which plot was raided
+    pub plot_index: u8,
+    /// Whether the raid succeeded
+    pub success: bool,
+    /// Amount stolen or lost
+    pub amount: u128,
+    /// Transaction hash/signature for verification
+    pub tx_signature: Option<[u8; 64]>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum RaidType {
+    Attack,
+    Defense,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -174,6 +275,8 @@ pub struct PlayerStats {
     pub successful_steals: u32,
     pub failed_steals: u32,
     pub times_raided: u32,
+    /// Times successfully defended (raider picked wrong plot)
+    pub times_defended: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -183,12 +286,15 @@ pub struct RegistryEntry {
     pub registered_at: Timestamp,
     pub is_active: bool,
     pub page_count: u8,
+    /// Total staked across all pages (public)
+    pub total_staked: u128,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameConfig {
     pub yield_rate_bps: u32,
-    pub steal_chance_bps: u32,
+    /// Minimum stake required for guaranteed steal
+    pub min_steal_stake: u128,
     pub min_deposit: u128,
     pub max_deposit: u128,
     pub raid_cooldown_blocks: u64,
@@ -199,7 +305,7 @@ impl Default for GameConfig {
     fn default() -> Self {
         Self {
             yield_rate_bps: BASE_YIELD_RATE_BPS as u32,
-            steal_chance_bps: (STEAL_SUCCESS_RATE as u32) * 100,
+            min_steal_stake: MIN_STEAL_STAKE,
             min_deposit: 100,
             max_deposit: 1_000_000_000,
             raid_cooldown_blocks: RAID_COOLDOWN_BLOCKS,

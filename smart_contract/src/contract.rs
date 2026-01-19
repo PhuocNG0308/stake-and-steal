@@ -1,4 +1,7 @@
-//! # Steal & Yield - Contract Implementation
+//! # Stake and Steal - Contract Implementation
+//!
+//! Stake coins on plots to earn yield. If you stake enough on a cell,
+//! you can guarantee a successful steal from other players!
 
 #![cfg_attr(target_arch = "wasm32", no_main)]
 
@@ -9,35 +12,35 @@ use linera_sdk::{
     views::{RootView, View},
     Contract, ContractRuntime,
 };
-use steal_and_yield::{
+use stake_and_steal::{
     GameConfig, GameError, Message, Operation, OperationResponse, Page, PlayerStats, RaidState,
-    StealAndYieldAbi, MAX_PAGES_PER_PLAYER,
+    StakeAndStealAbi, MAX_PAGES_PER_PLAYER,
 };
 
-use self::state::StealAndYieldState;
+use self::state::StakeAndStealState;
 
-pub struct StealAndYieldContract {
-    state: StealAndYieldState,
+pub struct StakeAndStealContract {
+    state: StakeAndStealState,
     runtime: ContractRuntime<Self>,
 }
 
-linera_sdk::contract!(StealAndYieldContract);
+linera_sdk::contract!(StakeAndStealContract);
 
-impl WithContractAbi for StealAndYieldContract {
-    type Abi = StealAndYieldAbi;
+impl WithContractAbi for StakeAndStealContract {
+    type Abi = StakeAndStealAbi;
 }
 
-impl Contract for StealAndYieldContract {
+impl Contract for StakeAndStealContract {
     type Message = Message;
     type Parameters = ();
     type InstantiationArgument = u128; // Initial balance
     type EventValue = ();
 
     async fn load(runtime: ContractRuntime<Self>) -> Self {
-        let state = StealAndYieldState::load(runtime.root_view_storage_context())
+        let state = StakeAndStealState::load(runtime.root_view_storage_context())
             .await
             .expect("Failed to load state");
-        StealAndYieldContract { state, runtime }
+        StakeAndStealContract { state, runtime }
     }
 
     async fn instantiate(&mut self, initial_balance: u128) {
@@ -95,13 +98,9 @@ impl Contract for StealAndYieldContract {
                     lock_until_block: current_block + 50,
                 }
             }
-            Operation::ExecuteSteal { target_page: _, target_plot: _, reveal_nonce: _ } => {
-                // Simplified: always fail for now
-                self.state.raid_state.set(RaidState::Idle);
-                OperationResponse::StealResult {
-                    success: false,
-                    amount_stolen: 0,
-                }
+            Operation::ExecuteSteal { attacker_page, attacker_plot, target_page: _, target_plot: _, reveal_nonce: _ } => {
+                // New stake-based steal logic: if attacker has staked enough, steal is guaranteed!
+                self.handle_execute_steal(attacker_page, attacker_plot).await
             }
             Operation::CancelRaid => {
                 self.state.raid_state.set(RaidState::Idle);
@@ -166,7 +165,7 @@ impl Contract for StealAndYieldContract {
     }
 }
 
-impl StealAndYieldContract {
+impl StakeAndStealContract {
     async fn handle_register(&mut self, encrypted_name: Vec<u8>) -> OperationResponse {
         if *self.state.is_registered.get() {
             return OperationResponse::Error {
@@ -368,6 +367,79 @@ impl StealAndYieldContract {
         OperationResponse::ClaimedAll { total_yield }
     }
 
+    /// Execute steal: If attacker has staked >= min_steal_stake on their plot, steal is GUARANTEED!
+    async fn handle_execute_steal(&mut self, attacker_page: u8, attacker_plot: u8) -> OperationResponse {
+        let config = self.state.config.get().clone();
+        
+        // Check attacker's stake on their plot
+        let page_result = self.state.pages.get(&attacker_page).await;
+        let page = match page_result {
+            Ok(Some(p)) => p,
+            _ => {
+                self.state.raid_state.set(RaidState::Idle);
+                return OperationResponse::Error {
+                    message: format!("Invalid attacker page ID: {}", attacker_page),
+                };
+            }
+        };
+
+        if attacker_plot as usize >= page.plots.len() {
+            self.state.raid_state.set(RaidState::Idle);
+            return OperationResponse::Error {
+                message: format!("Invalid attacker plot ID: {}", attacker_plot),
+            };
+        }
+
+        let attacker_stake = page.plots[attacker_plot as usize].balance;
+        
+        // NEW MECHANIC: If attacker has staked enough, steal is GUARANTEED!
+        if attacker_stake >= config.min_steal_stake {
+            // Steal is successful! Take 15% from attacker's own stake as "payment"
+            let steal_cost = attacker_stake * 15 / 100;
+            let amount_stolen = attacker_stake - steal_cost; // The "stolen" amount is what remains
+            
+            // For now, this is a simplified local steal (cross-chain would need messages)
+            let mut updated_page = page.clone();
+            updated_page.plots[attacker_plot as usize].balance = 0; // Use up the stake
+            self.state.pages.insert(&attacker_page, updated_page).expect("Failed to update page");
+            
+            // Add stolen amount to available balance
+            let available = *self.state.available_balance.get();
+            self.state.available_balance.set(available + amount_stolen);
+            
+            // Update stats
+            let mut stats = self.state.stats.get().clone();
+            stats.successful_steals += 1;
+            stats.total_stolen += amount_stolen;
+            self.state.stats.set(stats);
+            
+            // Set cooldown
+            let current_block = *self.state.current_block.get();
+            self.state.raid_state.set(RaidState::Cooldown { 
+                until_block: current_block + config.raid_cooldown_blocks 
+            });
+            
+            OperationResponse::StealResult {
+                success: true,
+                amount_stolen,
+            }
+        } else {
+            // Not enough stake - steal fails
+            self.state.raid_state.set(RaidState::Idle);
+            
+            let mut stats = self.state.stats.get().clone();
+            stats.failed_steals += 1;
+            self.state.stats.set(stats);
+            
+            OperationResponse::Error {
+                message: format!(
+                    "Insufficient stake for guaranteed steal. Need {} but have {}",
+                    config.min_steal_stake, attacker_stake
+                ),
+            }
+        }
+    }
+
     async fn process_steal_on_victim(&mut self, target_page: u8, target_plot: u8) -> Result<(), GameError> {
         // Simplified victim-side processing
         let page_result = self.state.pages.get(&target_page).await;
@@ -382,18 +454,18 @@ impl StealAndYieldContract {
 
         let plot = &mut page.plots[target_plot as usize];
         
-        // Simple steal logic: 15% chance, steal 10% of balance
-        let stolen_amount = plot.balance / 10;
-        if stolen_amount > 0 {
-            plot.balance -= stolen_amount;
-            self.state.pages.insert(&target_page, page).expect("Failed to update page");
-
-            let mut stats = self.state.stats.get().clone();
-            stats.total_lost_to_steals += stolen_amount;
-            stats.times_raided += 1;
-            self.state.stats.set(stats);
-        }
-
+        // Simple steal logic: steal 15% of balance
+        let stolen_amount = plot.balance * 15 / 100;
+        plot.balance -= stolen_amount;
+        
+        // Update stats
+        let mut stats = self.state.stats.get().clone();
+        stats.total_lost_to_steals += stolen_amount;
+        stats.times_raided += 1;
+        self.state.stats.set(stats);
+        
+        self.state.pages.insert(&target_page, page).expect("Failed to update page");
+        
         Ok(())
     }
 }

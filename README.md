@@ -1,13 +1,21 @@
-# Steal & Yield - GameFi on Linera
+# Stake and Steal - GameFi on Linera
 
 A decentralized yield farming game with PvP stealing mechanics, built on Linera Protocol.
 
 ## Overview
 
-**Steal & Yield** is a GameFi application where players:
-1. **Deposit** funds into Land Plots to earn yield
-2. **Steal** from other players using a commit-reveal mechanism
-3. **Defend** their assets with encrypted state
+**Stake and Steal** is a GameFi application where players:
+1. **Stake** funds into Land Plots to earn yield
+2. **Steal** from other players - stake enough and you're guaranteed to steal!
+3. **Defend** their assets with strategic staking
+
+## Key Features
+
+- 🎮 **Demo Wallet**: Try the game without real tokens (local storage only)
+- 🦊 **MetaMask Support**: Use your existing MetaMask wallet
+- 🔷 **Linera Wallet**: Native integration with Linera wallet
+- 💧 **In-Game Faucet**: Claim test tokens directly in the game
+- ⚡ **Guaranteed Steals**: Stake enough coins and your steal is guaranteed!
 
 ## Architecture
 
@@ -39,50 +47,51 @@ A decentralized yield farming game with PvP stealing mechanics, built on Linera 
 
 ## Game Mechanics
 
-### 1. Land & Deposit (Yield Farming)
+### 1. Land & Staking (Yield Farming)
 
 - Each player has their own **microchain**
 - Players can create up to 5 **Pages** (expandable)
 - Each Page contains up to 5 **Plots**
-- Deposit funds into Plots to earn **yield** over time
+- Stake funds into Plots to earn **yield** over time
 - Yield rate: 5% APY (configurable)
 
 ### 2. Stealing Mechanism (PvP)
 
+**New Guaranteed Steal System:**
+- Stake coins on your plot
+- If you stake **≥ MIN_STEAL_STAKE** (default: 1000), your steal is **GUARANTEED**!
+- The stake is consumed during the steal attempt
+- 15% of your stake is taken as a fee, you keep the rest as "stolen" funds
+
 ```
-Player A                    Registry                    Player B
-    │                          │                            │
-    │── FindTargets(3) ───────►│                            │
-    │◄── TargetList[B,C,D] ────│                            │
-    │                          │                            │
-    │── LockTarget(B, hash) ──►│                            │
-    │◄── TargetLocked ─────────│                            │
-    │                          │                            │
-    │── ExecuteSteal(page,plot,nonce) ─────────────────────►│
-    │                          │                            │
-    │◄─────────────────────────────── StealOutcome(result) ─│
-    │                          │                            │
-    │◄─────────────────────────────── StolenFunds (if win) ─│
+┌─────────────────────────────────────────────────────────────────┐
+│                    STEAL MECHANICS                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  Your Stake >= 1000?  ───YES───►  GUARANTEED STEAL! 💰          │
+│         │                                                        │
+│         NO                                                       │
+│         │                                                        │
+│         ▼                                                        │
+│  Steal attempt fails. Stake more to guarantee success!          │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-- **Find Targets**: Request random targets from Registry
-- **Lock Target**: Commit to target using hash(target + nonce)
-- **Execute Steal**: Reveal nonce, RNG determines success
-- **Success Rate**: 30% base rate (configurable)
-- **Cooldown**: 100 blocks between steals
+### 3. Wallet Options
 
-### 3. Encryption (FHE-Ready)
+| Wallet Type | Description | Persistence |
+|------------|-------------|-------------|
+| Demo Wallet | For testing, no real tokens | Local storage only |
+| Linera Wallet | Native Linera wallet extension | Blockchain |
+| MetaMask | Via adapter/bridge | Blockchain |
 
-All sensitive data is encrypted:
-- Plot balances use `EncryptedData` struct
-- Currently uses XOR-based mock encryption
-- Designed for future FHE integration
-- Version field enables smooth migration
+⚠️ **Warning**: Demo wallet data is stored locally and will NOT sync to testnet!
 
 ## Project Structure
 
 ```
-stake-and-yield/
+stake-and-steal/
 ├── smart_contract/
 │   ├── Cargo.toml
 │   └── src/
@@ -96,7 +105,8 @@ stake-and-yield/
 │       ├── components/    # React components
 │       ├── hooks/         # Custom hooks
 │       ├── graphql/       # Queries & mutations
-│       └── utils/         # Helpers
+│       ├── lib/           # Wallet integrations
+│       └── config/        # Network configuration
 └── docs/
     └── linera/           # Linera documentation
 ```

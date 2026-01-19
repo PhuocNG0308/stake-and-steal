@@ -1,284 +1,536 @@
-import { useState } from 'react'
-import { useQuery } from '@apollo/client'
-import { motion } from 'framer-motion'
+/**
+ * Raid Page - Hidden Plot Raiding System
+ * 
+ * Raiders must select a victim and guess which plot has tokens.
+ * If they guess correctly, they steal a percentage.
+ * All balance updates are live and reflected across the app.
+ */
+
+import { useState, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   BoltIcon,
   ShieldCheckIcon,
-  MagnifyingGlassIcon,
-  LockClosedIcon,
-  PlayIcon,
-  XMarkIcon,
-  ExclamationTriangleIcon,
+  UserPlusIcon,
+  UsersIcon,
+  WalletIcon,
+  TrashIcon,
+  QuestionMarkCircleIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  TrophyIcon,
+  ClockIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline'
-import { GET_RAID_STATE, GET_COOLDOWN_STATUS } from '@/graphql/queries'
-import { formatBalance } from '@/utils/format'
-import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import type { TargetInfo } from '@/types'
+import { useWalletStore } from '../stores'
+import { useGameData, type TestVictim } from '../stores/gameDataStore'
+import { useTestSettings } from '../hooks/useTestSettings'
+import { formatBalance } from '../utils/format'
 
-type RaidStep = 'idle' | 'finding' | 'selecting' | 'locked' | 'executing' | 'result'
+const PLOTS_COUNT = 5
+
+type RaidPhase = 'select-target' | 'select-plot' | 'executing' | 'result'
 
 export default function Raid() {
-  const { data: raidData, loading } = useQuery(GET_RAID_STATE, {
-    pollInterval: 2000,
-  })
-  const { data: cooldownData } = useQuery(GET_COOLDOWN_STATUS, {
-    pollInterval: 5000,
-  })
+  const { connected } = useWalletStore()
+  const { 
+    testVictims, 
+    raidHistory,
+    stats,
+    balance,
+    createTestVictim,
+    removeTestVictim,
+    executeRaid,
+    discoverNetworkPlayers,
+  } = useGameData()
+  const { settings } = useTestSettings()
 
-  const [selectedTarget, setSelectedTarget] = useState<TargetInfo | null>(null)
-  const [raidStep, setRaidStep] = useState<RaidStep>('idle')
+  const [phase, setPhase] = useState<RaidPhase>('select-target')
+  const [selectedVictim, setSelectedVictim] = useState<TestVictim | null>(null)
+  const [selectedPlot, setSelectedPlot] = useState<number | null>(null)
+  const [raidResult, setRaidResult] = useState<{ success: boolean; amount: number } | null>(null)
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [showNetworkPlayers, setShowNetworkPlayers] = useState(false)
 
-  const raidState = raidData?.raidState
-  const isOnCooldown = cooldownData?.isOnCooldown || false
-  const cooldownRemaining = cooldownData?.cooldownRemaining || '0'
+  // Get network players (other wallets registered on network)
+  const networkPlayers = useMemo(() => discoverNetworkPlayers(), [discoverNetworkPlayers])
 
-  const handleFindTargets = () => {
-    setRaidStep('finding')
-    // TODO: Call FindTargets mutation
+  // Combine test victims and network players
+  const allTargets = useMemo(() => {
+    if (showNetworkPlayers) {
+      return [...networkPlayers, ...testVictims]
+    }
+    return testVictims
+  }, [testVictims, networkPlayers, showNetworkPlayers])
+
+  // Calculate win rate
+  const winRate = useMemo(() => {
+    const total = stats.successfulRaids + stats.failedRaids
+    if (total === 0) return 0
+    return Math.round((stats.successfulRaids / total) * 100)
+  }, [stats.successfulRaids, stats.failedRaids])
+
+  const handleCreateTestVictim = () => {
+    const newVictim = createTestVictim()
+    setNotification({ type: 'success', message: `Created test victim: ${newVictim.name}` })
+    setTimeout(() => setNotification(null), 2000)
   }
 
-  const handleSelectTarget = (target: TargetInfo) => {
-    setSelectedTarget(target)
+  const handleSelectVictim = (victim: TestVictim) => {
+    setSelectedVictim(victim)
+    setSelectedPlot(null)
+    setPhase('select-plot')
   }
 
-  const handleLockTarget = () => {
-    if (!selectedTarget) return
-    setRaidStep('locked')
-    // TODO: Call LockTarget mutation
+  const handleSelectPlot = (plotIndex: number) => {
+    setSelectedPlot(plotIndex)
   }
 
-  const handleExecuteSteal = () => {
-    setRaidStep('executing')
-    // TODO: Call ExecuteSteal mutation
+  const handleExecuteRaid = () => {
+    if (!selectedVictim || selectedPlot === null) return
+
+    setPhase('executing')
+
+    // Simulate execution delay
+    setTimeout(() => {
+      const result = executeRaid(selectedVictim.id, selectedPlot)
+      setRaidResult(result)
+      setPhase('result')
+    }, 1500)
   }
 
-  const handleCancelRaid = () => {
-    setRaidStep('idle')
-    setSelectedTarget(null)
-    // TODO: Call CancelRaid mutation
+  const handleReset = () => {
+    setPhase('select-target')
+    setSelectedVictim(null)
+    setSelectedPlot(null)
+    setRaidResult(null)
   }
 
-  if (loading) {
+  // Not connected state
+  if (!connected) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner size="lg" />
-      </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4"
+      >
+        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-700/20 flex items-center justify-center mb-6 border border-red-500/30">
+          <BoltIcon className="w-10 h-10 text-red-400" />
+        </div>
+        <h2 className="text-2xl font-bold mb-3">Ready to Steal?</h2>
+        <p className="text-slate-400 max-w-md mb-6">
+          Connect your wallet to start stealing from other players.
+          Pick the right plot and steal their yield! ⚔️
+        </p>
+        <div className="flex items-center gap-2 text-slate-500">
+          <WalletIcon className="w-5 h-5" />
+          <span>Connect wallet to continue</span>
+        </div>
+      </motion.div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-3">
-            <BoltIcon className="w-8 h-8 text-danger-400" />
-            Raid Mode
-          </h1>
-          <p className="text-dark-400">
-            Find targets and steal their yield
-          </p>
+    <div className="min-h-screen pb-24 px-4 pt-4">
+      {/* Notification Toast */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg flex items-center gap-2 ${
+              notification.type === 'success' ? 'bg-green-500/90' : 'bg-red-500/90'
+            }`}
+          >
+            {notification.type === 'success' ? (
+              <CheckCircleIcon className="w-5 h-5" />
+            ) : (
+              <XCircleIcon className="w-5 h-5" />
+            )}
+            {notification.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Header with Stats */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold flex items-center gap-3 mb-4">
+          <BoltIcon className="w-8 h-8 text-red-400" />
+          Steal Mode
+        </h1>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-slate-800/60 rounded-xl p-3 border border-slate-700/50">
+            <div className="text-xs text-slate-400 mb-1">Balance</div>
+            <div className="text-lg font-bold text-yellow-400">{formatBalance(balance)}</div>
+          </div>
+          <div className="bg-slate-800/60 rounded-xl p-3 border border-slate-700/50">
+            <div className="text-xs text-slate-400 mb-1">Total Stolen</div>
+            <div className="text-lg font-bold text-green-400">{formatBalance(stats.totalStolen)}</div>
+          </div>
+          <div className="bg-slate-800/60 rounded-xl p-3 border border-slate-700/50">
+            <div className="text-xs text-slate-400 mb-1">Win Rate</div>
+            <div className="text-lg font-bold text-blue-400">{winRate}%</div>
+          </div>
         </div>
       </div>
 
-      {/* Cooldown Warning */}
-      {isOnCooldown && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card bg-yellow-900/20 border-yellow-600/30"
-        >
-          <div className="flex items-center gap-4">
-            <ExclamationTriangleIcon className="w-8 h-8 text-yellow-400" />
-            <div>
-              <p className="font-semibold text-yellow-400">Raid Cooldown Active</p>
-              <p className="text-sm text-dark-300">
-                You can raid again in <span className="font-mono font-bold">{cooldownRemaining}</span> blocks
+      {/* Main Content Based on Phase */}
+      <AnimatePresence mode="wait">
+        {phase === 'select-target' && (
+          <motion.div
+            key="select-target"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="space-y-4"
+          >
+            {/* Test Victims Section */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <UsersIcon className="w-5 h-5 text-yellow-400" />
+                Available Targets
+              </h2>
+              <div className="flex items-center gap-2">
+                {/* Network Players Toggle */}
+                {networkPlayers.length > 0 && (
+                  <button
+                    onClick={() => setShowNetworkPlayers(!showNetworkPlayers)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1 ${
+                      showNetworkPlayers 
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                        : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'
+                    }`}
+                  >
+                    <GlobeAltIcon className="w-4 h-4" />
+                    Network ({networkPlayers.length})
+                  </button>
+                )}
+                <button
+                  onClick={handleCreateTestVictim}
+                  className="px-3 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg text-sm font-medium flex items-center gap-1"
+                >
+                  <UserPlusIcon className="w-4 h-4" />
+                  Create Victim
+                </button>
+              </div>
+            </div>
+
+            {allTargets.length === 0 ? (
+              <div className="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700/30">
+                <UsersIcon className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                <p className="text-slate-400 mb-4">No victims available. Create some to test raiding!</p>
+                <button
+                  onClick={handleCreateTestVictim}
+                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-slate-900 rounded-lg font-medium"
+                >
+                  Create First Victim
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {allTargets.map((victim) => {
+                  const isNetworkPlayer = networkPlayers.some(p => p.id === victim.id)
+                  return (
+                    <motion.div
+                      key={victim.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`rounded-xl p-4 border ${
+                        isNetworkPlayer 
+                          ? 'bg-green-900/20 border-green-500/30' 
+                          : 'bg-slate-800/60 border-slate-700/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold">{victim.name}</p>
+                            {isNetworkPlayer && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-green-500/20 text-green-400 border border-green-500/30">
+                                NETWORK
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 font-mono truncate max-w-[150px]">
+                            {victim.chainId}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="text-sm text-slate-400">Total Staked</p>
+                            <p className="text-lg font-bold text-yellow-400">{formatBalance(victim.totalStaked)}</p>
+                          </div>
+                          {!isNetworkPlayer && (
+                            <button
+                              onClick={() => removeTestVictim(victim.id)}
+                              className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400"
+                            >
+                              <TrashIcon className="w-5 h-5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Hidden Plots Preview (Show only that there ARE 5 plots, not which has tokens) */}
+                      <div className="grid grid-cols-5 gap-2 mb-3">
+                        {Array.from({ length: PLOTS_COUNT }).map((_, idx) => (
+                          <div
+                            key={idx}
+                            className="aspect-square bg-slate-700/50 rounded-lg flex items-center justify-center border border-slate-600/50"
+                          >
+                            <QuestionMarkCircleIcon className="w-6 h-6 text-slate-500" />
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => handleSelectVictim(victim)}
+                        className={`w-full py-2 rounded-lg font-medium flex items-center justify-center gap-2 ${
+                          isNetworkPlayer
+                            ? 'bg-green-500/20 hover:bg-green-500/30 text-green-400'
+                            : 'bg-red-500/20 hover:bg-red-500/30 text-red-400'
+                        }`}
+                      >
+                        <BoltIcon className="w-5 h-5" />
+                        Select as Target
+                      </button>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Raid History */}
+            {raidHistory.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <ClockIcon className="w-5 h-5 text-slate-400" />
+                  Recent Raids
+                </h3>
+                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                  {raidHistory.slice(0, 10).map((entry) => (
+                    <div
+                      key={entry.id}
+                      className={`flex items-center justify-between p-3 rounded-lg ${
+                        entry.success
+                          ? 'bg-green-500/10 border border-green-500/20'
+                          : 'bg-red-500/10 border border-red-500/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {entry.success ? (
+                          <CheckCircleIcon className="w-5 h-5 text-green-400" />
+                        ) : (
+                          <XCircleIcon className="w-5 h-5 text-red-400" />
+                        )}
+                        <div>
+                          <p className="text-sm font-medium">{entry.targetName}</p>
+                          <p className="text-xs text-slate-500">Plot #{entry.plotIndex + 1}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {entry.success ? (
+                          <p className="text-green-400 font-bold">+{formatBalance(entry.amount)}</p>
+                        ) : (
+                          <p className="text-red-400 text-sm">Failed</p>
+                        )}
+                        <p className="text-xs text-slate-500">
+                          {new Date(entry.timestamp).toLocaleTimeString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {phase === 'select-plot' && selectedVictim && (
+          <motion.div
+            key="select-plot"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-4"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={handleReset}
+                className="text-slate-400 hover:text-white text-sm"
+              >
+                ← Back
+              </button>
+              <h2 className="text-lg font-semibold">Select a Plot to Raid</h2>
+              <div className="w-12" />
+            </div>
+
+            {/* Target Info */}
+            <div className="bg-slate-800/60 rounded-xl p-4 border border-red-500/30">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">Target</p>
+                  <p className="font-bold">{selectedVictim.name}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-slate-400">Total Staked</p>
+                  <p className="text-xl font-bold text-yellow-400">{formatBalance(selectedVictim.totalStaked)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Plot Selection - Raiders see all plots as "?" */}
+            <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/30">
+              <h3 className="text-center font-semibold mb-4 text-red-400">
+                🎯 Pick a Plot (Guess Wisely!)
+              </h3>
+              <p className="text-center text-sm text-slate-400 mb-4">
+                One or more plots have tokens hidden. Pick correctly to steal!
+              </p>
+              
+              <div className="grid grid-cols-5 gap-3">
+                {Array.from({ length: PLOTS_COUNT }).map((_, idx) => (
+                  <motion.button
+                    key={idx}
+                    onClick={() => handleSelectPlot(idx)}
+                    className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center transition-all ${
+                      selectedPlot === idx
+                        ? 'border-red-500 bg-red-500/20 scale-105'
+                        : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'
+                    }`}
+                    whileHover={{ scale: selectedPlot === idx ? 1.05 : 1.02 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <QuestionMarkCircleIcon className="w-8 h-8 text-slate-400" />
+                    <p className="text-xs mt-1 text-slate-500">#{idx + 1}</p>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Execute Button */}
+            <motion.button
+              onClick={handleExecuteRaid}
+              disabled={selectedPlot === null}
+              className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 ${
+                selectedPlot !== null
+                  ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600'
+                  : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              }`}
+              whileHover={selectedPlot !== null ? { scale: 1.02 } : {}}
+              whileTap={selectedPlot !== null ? { scale: 0.98 } : {}}
+            >
+              <BoltIcon className="w-6 h-6" />
+              {selectedPlot !== null ? `Raid Plot #${selectedPlot + 1}` : 'Select a Plot'}
+            </motion.button>
+
+            {/* Risk Warning */}
+            <div className="p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+              <p className="text-sm text-yellow-400 text-center">
+                ⚠️ You have a {Math.round(100 / PLOTS_COUNT)}% base chance of picking the right plot!
               </p>
             </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
 
-      {/* Raid Flow */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Step 1: Find Targets */}
-        <motion.div
-          className={`card ${raidStep === 'idle' || raidStep === 'finding' ? 'ring-2 ring-primary-500' : 'opacity-50'}`}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-sm font-bold">
-              1
-            </div>
-            <h3 className="font-semibold">Find Targets</h3>
-          </div>
-
-          <p className="text-sm text-dark-400 mb-4">
-            Search for players with deposited funds to raid.
-          </p>
-
-          <button
-            className="btn-primary w-full"
-            onClick={handleFindTargets}
-            disabled={isOnCooldown || raidStep !== 'idle'}
+        {phase === 'executing' && (
+          <motion.div
+            key="executing"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="min-h-[50vh] flex flex-col items-center justify-center"
           >
-            {raidStep === 'finding' ? (
-              <>
-                <LoadingSpinner size="sm" />
-                Searching...
-              </>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              className="w-20 h-20 rounded-full border-4 border-red-500/30 border-t-red-500 mb-6"
+            />
+            <h2 className="text-xl font-bold mb-2">Executing Raid...</h2>
+            <p className="text-slate-400">Attempting to breach Plot #{(selectedPlot ?? 0) + 1}</p>
+          </motion.div>
+        )}
+
+        {phase === 'result' && raidResult && (
+          <motion.div
+            key="result"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="min-h-[50vh] flex flex-col items-center justify-center text-center px-4"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 200 }}
+              className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 ${
+                raidResult.success ? 'bg-green-500/20' : 'bg-red-500/20'
+              }`}
+            >
+              {raidResult.success ? (
+                <TrophyIcon className="w-12 h-12 text-green-400" />
+              ) : (
+                <XCircleIcon className="w-12 h-12 text-red-400" />
+              )}
+            </motion.div>
+
+            <h2 className={`text-3xl font-bold mb-2 ${
+              raidResult.success ? 'text-green-400' : 'text-red-400'
+            }`}>
+              {raidResult.success ? 'RAID SUCCESS!' : 'RAID FAILED'}
+            </h2>
+
+            {raidResult.success ? (
+              <div className="space-y-2 mb-6">
+                <p className="text-slate-300">You found tokens in Plot #{(selectedPlot ?? 0) + 1}!</p>
+                <p className="text-2xl font-bold text-yellow-400">
+                  +{formatBalance(raidResult.amount)} Stolen!
+                </p>
+              </div>
             ) : (
-              <>
-                <MagnifyingGlassIcon className="w-4 h-4" />
-                Find Targets
-              </>
+              <div className="space-y-2 mb-6">
+                <p className="text-slate-300">Plot #{(selectedPlot ?? 0) + 1} was empty!</p>
+                <p className="text-slate-400">Better luck next time...</p>
+              </div>
             )}
-          </button>
-        </motion.div>
 
-        {/* Step 2: Lock Target */}
-        <motion.div
-          className={`card ${raidStep === 'selecting' || raidStep === 'locked' ? 'ring-2 ring-primary-500' : 'opacity-50'}`}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-sm font-bold">
-              2
-            </div>
-            <h3 className="font-semibold">Lock Target</h3>
-          </div>
-
-          <p className="text-sm text-dark-400 mb-4">
-            Select and lock onto a target using commit-reveal.
-          </p>
-
-          <button
-            className="btn-secondary w-full"
-            onClick={handleLockTarget}
-            disabled={!selectedTarget || raidStep === 'locked'}
-          >
-            <LockClosedIcon className="w-4 h-4" />
-            {raidStep === 'locked' ? 'Locked' : 'Lock Target'}
-          </button>
-        </motion.div>
-
-        {/* Step 3: Execute Steal */}
-        <motion.div
-          className={`card ${raidStep === 'locked' || raidStep === 'executing' ? 'ring-2 ring-danger-500' : 'opacity-50'}`}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-danger-600 flex items-center justify-center text-sm font-bold">
-              3
-            </div>
-            <h3 className="font-semibold">Execute Steal</h3>
-          </div>
-
-          <p className="text-sm text-dark-400 mb-4">
-            Reveal your commitment and attempt the steal.
-          </p>
-
-          <button
-            className="btn-danger w-full"
-            onClick={handleExecuteSteal}
-            disabled={raidStep !== 'locked'}
-          >
-            {raidStep === 'executing' ? (
-              <>
-                <LoadingSpinner size="sm" />
-                Stealing...
-              </>
-            ) : (
-              <>
-                <PlayIcon className="w-4 h-4" />
-                Execute Steal
-              </>
-            )}
-          </button>
-        </motion.div>
-      </div>
-
-      {/* Target Selection */}
-      {raidState?.targets && raidState.targets.length > 0 && (
-        <div className="card">
-          <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <ShieldCheckIcon className="w-5 h-5 text-primary-400" />
-            Available Targets
-          </h3>
-
-          <div className="space-y-3">
-            {raidState.targets.map((target: TargetInfo, index: number) => (
-              <motion.button
-                key={target.chainId}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                onClick={() => handleSelectTarget(target)}
-                className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
-                  selectedTarget?.chainId === target.chainId
-                    ? 'border-primary-500 bg-primary-600/20'
-                    : 'border-dark-600 hover:border-dark-500 bg-dark-800'
-                }`}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setSelectedPlot(null)
+                  setRaidResult(null)
+                  setPhase('select-plot')
+                }}
+                className="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-mono text-sm text-dark-300">
-                      {target.chainId.slice(0, 16)}...{target.chainId.slice(-8)}
-                    </p>
-                    <p className="text-xs text-dark-400 mt-1">
-                      Last active: Block {target.lastActiveBlock}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-primary-400">
-                      ~{formatBalance(target.estimatedValue)}
-                    </p>
-                    <p className="text-xs text-dark-400">
-                      Defense: {target.defenseScore}/100
-                    </p>
-                  </div>
-                </div>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Cancel Button */}
-      {raidStep !== 'idle' && (
-        <div className="flex justify-center">
-          <button
-            onClick={handleCancelRaid}
-            className="btn-ghost text-dark-400"
-          >
-            <XMarkIcon className="w-4 h-4" />
-            Cancel Raid
-          </button>
-        </div>
-      )}
+                Try Again
+              </button>
+              <button
+                onClick={handleReset}
+                className="px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-slate-900 rounded-xl font-medium"
+              >
+                New Target
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Info Card */}
-      <div className="card bg-dark-800/50">
-        <h4 className="font-semibold mb-3">How Raiding Works</h4>
-        <ul className="space-y-2 text-sm text-dark-400">
-          <li className="flex items-start gap-2">
-            <span className="text-primary-400">•</span>
-            <span>Find random targets from the registry with deposited funds</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-primary-400">•</span>
-            <span>Lock onto a target using commit-reveal to prevent front-running</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-primary-400">•</span>
-            <span>Execute the steal with 30% base success rate</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-primary-400">•</span>
-            <span>If successful, steal up to 10% of target's deposited amount</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-danger-400">•</span>
-            <span>100 block cooldown between raids</span>
-          </li>
+      <div className="mt-8 p-4 bg-slate-800/40 rounded-xl border border-slate-700/30">
+        <h4 className="font-semibold mb-3 flex items-center gap-2">
+          <ShieldCheckIcon className="w-5 h-5 text-blue-400" />
+          How Raiding Works
+        </h4>
+        <ul className="space-y-2 text-sm text-slate-400">
+          <li>• Each farm has 5 hidden plots</li>
+          <li>• You must guess which plot(s) have tokens</li>
+          <li>• Correct guess = steal {settings.stealPercent}% of that plot's balance</li>
+          <li>• Wrong guess = nothing (no penalty)</li>
+          <li>• Strategy: Target farms with high total stake!</li>
         </ul>
       </div>
     </div>

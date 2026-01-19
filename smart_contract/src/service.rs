@@ -1,4 +1,4 @@
-//! # Steal & Yield - GraphQL Service
+//! # Stake and Steal - GraphQL Service
 
 #![cfg_attr(target_arch = "wasm32", no_main)]
 
@@ -8,28 +8,28 @@ use std::sync::Arc;
 
 use async_graphql::{EmptySubscription, Object, Request, Response, Schema, SimpleObject};
 use linera_sdk::{linera_base_types::WithServiceAbi, views::View, Service, ServiceRuntime};
-use steal_and_yield::StealAndYieldAbi;
+use stake_and_steal::StakeAndStealAbi;
 
-use self::state::StealAndYieldState;
+use self::state::StakeAndStealState;
 
-pub struct StealAndYieldService {
-    state: Arc<StealAndYieldState>,
+pub struct StakeAndStealService {
+    state: Arc<StakeAndStealState>,
 }
 
-linera_sdk::service!(StealAndYieldService);
+linera_sdk::service!(StakeAndStealService);
 
-impl WithServiceAbi for StealAndYieldService {
-    type Abi = StealAndYieldAbi;
+impl WithServiceAbi for StakeAndStealService {
+    type Abi = StakeAndStealAbi;
 }
 
-impl Service for StealAndYieldService {
+impl Service for StakeAndStealService {
     type Parameters = ();
 
     async fn new(runtime: ServiceRuntime<Self>) -> Self {
-        let state = StealAndYieldState::load(runtime.root_view_storage_context())
+        let state = StakeAndStealState::load(runtime.root_view_storage_context())
             .await
             .expect("Failed to load state");
-        StealAndYieldService {
+        StakeAndStealService {
             state: Arc::new(state),
         }
     }
@@ -90,7 +90,8 @@ struct PlotInfo {
 #[derive(SimpleObject)]
 struct ConfigInfo {
     yield_rate_bps: u32,
-    steal_chance_bps: u32,
+    /// Minimum stake required for guaranteed steal
+    min_steal_stake: String,
     min_deposit: String,
     max_deposit: String,
     raid_cooldown_blocks: String,
@@ -99,7 +100,7 @@ struct ConfigInfo {
 
 /// GraphQL Query Root
 struct QueryRoot {
-    state: Arc<StealAndYieldState>,
+    state: Arc<StakeAndStealState>,
 }
 
 #[Object]
@@ -107,12 +108,12 @@ impl QueryRoot {
     /// Get player information
     async fn player(&self) -> PlayerInfo {
         let raid_state_str = match self.state.raid_state.get() {
-            steal_and_yield::RaidState::Idle => "Idle".to_string(),
-            steal_and_yield::RaidState::Searching { .. } => "Searching".to_string(),
-            steal_and_yield::RaidState::Choosing { .. } => "Choosing".to_string(),
-            steal_and_yield::RaidState::Locked { .. } => "Locked".to_string(),
-            steal_and_yield::RaidState::Executing { .. } => "Executing".to_string(),
-            steal_and_yield::RaidState::Cooldown { .. } => "Cooldown".to_string(),
+            stake_and_steal::RaidState::Idle => "Idle".to_string(),
+            stake_and_steal::RaidState::Searching { .. } => "Searching".to_string(),
+            stake_and_steal::RaidState::Choosing { .. } => "Choosing".to_string(),
+            stake_and_steal::RaidState::Locked { .. } => "Locked".to_string(),
+            stake_and_steal::RaidState::Executing { .. } => "Executing".to_string(),
+            stake_and_steal::RaidState::Cooldown { .. } => "Cooldown".to_string(),
         };
 
         PlayerInfo {
@@ -144,7 +145,7 @@ impl QueryRoot {
         let config = self.state.config.get();
         ConfigInfo {
             yield_rate_bps: config.yield_rate_bps,
-            steal_chance_bps: config.steal_chance_bps,
+            min_steal_stake: config.min_steal_stake.to_string(),
             min_deposit: config.min_deposit.to_string(),
             max_deposit: config.max_deposit.to_string(),
             raid_cooldown_blocks: config.raid_cooldown_blocks.to_string(),

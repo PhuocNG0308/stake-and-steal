@@ -1,10 +1,16 @@
-# Steal & Yield - Linera Deployment Guide
+# Stake and Steal - Linera Deployment Guide
 
 ## Prerequisites
 
 1. **Rust** - with `wasm32-unknown-unknown` target
 2. **LLVM** - for building Linera CLI (libclang.dll)
 3. **Linera CLI** - v0.15.10
+
+## Current Testnet: Conway
+
+- **Faucet URL**: https://faucet.testnet-conway.linera.net
+- **RPC URL**: https://rpc.testnet-conway.linera.net
+- **Explorer**: https://explorer.testnet-conway.linera.net
 
 ## Installation Steps
 
@@ -29,11 +35,14 @@ cargo install linera-service@0.15.10 --locked
 ### 3. Initialize Wallet
 
 ```powershell
-# Connect to Testnet and get tokens from faucet
-linera wallet init --faucet https://faucet.testnet-babylonbee.linera.net --with-new-chain
+# Connect to Testnet Conway and get tokens from faucet
+linera wallet init --faucet https://faucet.testnet-conway.linera.net --with-new-chain
 
 # View your chain info
 linera wallet show
+
+# Request more tokens if needed
+linera wallet request-tokens --faucet https://faucet.testnet-conway.linera.net
 ```
 
 ### 4. Build Smart Contract
@@ -48,14 +57,23 @@ cargo build --release --target wasm32-unknown-unknown
 ```powershell
 # Publish bytecode
 linera publish-bytecode `
-    target/wasm32-unknown-unknown/release/steal_and_yield_contract.wasm `
-    target/wasm32-unknown-unknown/release/steal_and_yield_service.wasm
+    target/wasm32-unknown-unknown/release/stake_and_steal_contract.wasm `
+    target/wasm32-unknown-unknown/release/stake_and_steal_service.wasm
 
 # Create application (1000 = initial balance)
 linera create-application <BYTECODE_ID> --json-argument "1000"
 ```
 
-### 6. Start Local Service
+### 6. Configure Frontend
+
+After deployment, update the frontend environment:
+```powershell
+# frontend/.env.local
+VITE_NETWORK=testnet
+VITE_APP_ID=<YOUR_APP_ID>
+```
+
+### 7. Start Local Service
 
 ```powershell
 linera service --port 8080

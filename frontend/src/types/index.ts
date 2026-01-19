@@ -55,12 +55,14 @@ export interface RaidState {
 
 export interface GameConfig {
   yieldRateBps: string
-  stealSuccessRate: number
+  /** Minimum stake required for guaranteed steal */
+  minStealStake: string
   stealCooldownBlocks: string
   maxPages: number
   maxPlotsPerPage: number
   minDeposit: string
-  maxStealPercentage: number
+  /** Percentage taken during steal (0-100) */
+  stealPercentage: number
 }
 
 // ============================================================================
@@ -134,7 +136,13 @@ export interface LockTargetOperation {
 
 export interface ExecuteStealOperation {
   ExecuteSteal: {
+    /** Attacker's page where they have staked */
+    attacker_page: number
+    /** Attacker's plot where they have staked */
+    attacker_plot: number
+    /** Target page to steal from */
     target_page: number
+    /** Target plot to steal from */
     target_plot: number
     reveal_nonce: number[]
   }

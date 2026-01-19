@@ -1,45 +1,37 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { WalletState, GameState, NotificationItem, RaidPhase } from '@/types'
+import type { GameState, NotificationItem, RaidPhase } from '@/types'
+
+// Note: Wallet state is now managed by useWallet hook in hooks/useWallet.ts
+// This provides better integration with different wallet types (demo, Linera, MetaMask)
 
 // ============================================================================
-// WALLET STORE
+// WALLET STORE (Simple state for compatibility)
 // ============================================================================
 
-interface WalletStore extends WalletState {
-  connect: (chainId: string, address: string) => void
+interface WalletStore {
+  connected: boolean
+  chainId: string | null
+  owner: string | null
+  balance: string
+  setConnected: (connected: boolean) => void
+  setChainId: (chainId: string | null) => void
+  setOwner: (owner: string | null) => void
+  setBalance: (balance: string) => void
   disconnect: () => void
-  setChainId: (chainId: string) => void
 }
 
-export const useWalletStore = create<WalletStore>()(
-  persist(
-    (set) => ({
-      connected: false,
-      chainId: null,
-      address: null,
-
-      connect: (chainId, address) =>
-        set({
-          connected: true,
-          chainId,
-          address,
-        }),
-
-      disconnect: () =>
-        set({
-          connected: false,
-          chainId: null,
-          address: null,
-        }),
-
-      setChainId: (chainId) => set({ chainId }),
-    }),
-    {
-      name: 'steal-yield-wallet',
-    }
-  )
-)
+export const useWalletStore = create<WalletStore>()((set) => ({
+  connected: false,
+  chainId: null,
+  owner: null,
+  balance: '0',
+  setConnected: (connected) => set({ connected }),
+  setChainId: (chainId) => set({ chainId }),
+  setOwner: (owner) => set({ owner }),
+  setBalance: (balance) => set({ balance }),
+  disconnect: () => set({ connected: false, chainId: null, owner: null, balance: '0' }),
+}))
 
 // ============================================================================
 // GAME STORE

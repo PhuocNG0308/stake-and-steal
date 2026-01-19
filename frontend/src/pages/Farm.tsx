@@ -1,228 +1,461 @@
-// React import not required in modern JSX runtimes
-import { useQuery } from '@apollo/client'
+/**
+ * Farm Page - Hidden Plot System
+ * 
+ * Each farm has 5 plots. Players can deposit tokens into any plot.
+ * The key mechanic: Only the owner can see which plots have tokens.
+ * Raiders must guess which plot has tokens - more risk, more reward!
+ */
+
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useWalletStore } from '../stores'
+import { useGameData } from '../stores/gameDataStore'
+import { useTestSettings } from '../hooks/useTestSettings'
 import {
-  PlusIcon,
   SparklesIcon,
-  ArrowDownTrayIcon,
-  ArrowUpTrayIcon,
-  LockClosedIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  QuestionMarkCircleIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  WalletIcon,
 } from '@heroicons/react/24/outline'
-import { GET_ALL_PAGES, GET_CONFIG } from '@/graphql/queries'
-import { useUIStore } from '@/stores'
-import { formatBalance } from '@/utils/format'
-import LoadingSpinner from '@/components/ui/LoadingSpinner'
-import type { PageInfo, PlotInfo } from '@/types'
+import { formatBalance } from '../utils/format'
 
-export default function Farm() {
-  const { data, loading, error } = useQuery(GET_ALL_PAGES)
-  const { data: configData } = useQuery(GET_CONFIG)
-  const { openModal, selectPlot, selectedPage, selectedPlot, clearSelection } = useUIStore()
+const PLOTS_COUNT = 5
 
-  const pages: PageInfo[] = data?.allPages || []
-  const config = configData?.config
+// Plot visualization component
+interface PlotCardProps {
+  plot: {
+    plotId: number
+    hasTokens: boolean
+    balance: number
+    depositTime: number
+  }
+  isOwnerView: boolean
+  onDeposit: (amount: number) => void
+  onWithdraw: () => void
+  pendingYieldShare: number
+}
 
-  const handlePlotClick = (pageId: number, plotId: number, plot: PlotInfo) => {
-    if (plot.isLocked) return
-    selectPlot(pageId, plotId)
+function PlotCard({ plot, isOwnerView, onDeposit, onWithdraw, pendingYieldShare }: PlotCardProps) {
+  const [showDepositModal, setShowDepositModal] = useState(false)
+  const [depositAmount, setDepositAmount] = useState('')
+  const { balance } = useGameData()
+
+  const handleDeposit = () => {
+    const amount = parseFloat(depositAmount)
+    if (amount > 0 && amount <= balance) {
+      onDeposit(amount)
+      setDepositAmount('')
+      setShowDepositModal(false)
+    }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="card border-danger-600/50 bg-danger-900/20">
-        <p className="text-danger-400">Error loading farm data: {error.message}</p>
-      </div>
-    )
-  }
+  const hasContent = plot.hasTokens && plot.balance > 0
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Your Farm</h1>
-          <p className="text-dark-400">
-            Manage your land plots and grow your yield
-          </p>
-        </div>
-        <button
-          className="btn-primary"
-          onClick={() => openModal('create-page')}
-          disabled={pages.length >= (config?.maxPages || 5)}
-        >
-          <PlusIcon className="w-4 h-4" />
-          New Page
-        </button>
+    <motion.div
+      className={`relative rounded-xl border-2 p-3 h-[200px] flex flex-col ${
+        hasContent
+          ? 'border-yellow-500/50 bg-gradient-to-br from-yellow-500/10 to-orange-500/10'
+          : 'border-slate-600/50 bg-slate-800/50'
+      }`}
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: 'spring', stiffness: 300 }}
+    >
+      {/* Plot Number */}
+      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-700 rounded-full text-xs font-bold">
+        #{plot.plotId + 1}
       </div>
 
-      {/* Config Info */}
-      {config && (
-        <div className="card bg-dark-800/50 p-4">
-          <div className="flex flex-wrap gap-6 text-sm">
-            <div>
-              <span className="text-dark-400">Yield Rate:</span>{' '}
-              <span className="font-semibold text-primary-400">
-                {(Number(config.yieldRateBps) / 100).toFixed(2)}% APY
-              </span>
+      {/* Content Area */}
+      <div className="flex-1 flex flex-col items-center justify-center mt-2">
+        {isOwnerView ? (
+          // Owner can see everything
+          hasContent ? (
+            <div className="text-center space-y-1">
+              <div className="text-2xl">🌱</div>
+              <div className="text-sm font-bold text-yellow-400">
+                {formatBalance(plot.balance)}
+              </div>
+              {pendingYieldShare > 0 && (
+                <div className="text-xs text-green-400">
+                  +{formatBalance(pendingYieldShare)}
+                </div>
+              )}
             </div>
-            <div>
-              <span className="text-dark-400">Min Deposit:</span>{' '}
-              <span className="font-semibold">{formatBalance(config.minDeposit)}</span>
+          ) : (
+            <div className="text-center space-y-1">
+              <div className="text-2xl opacity-30">🕳️</div>
+              <div className="text-xs text-slate-400">Empty</div>
             </div>
-            <div>
-              <span className="text-dark-400">Max Steal:</span>{' '}
-              <span className="font-semibold text-danger-400">{config.maxStealPercentage}%</span>
-            </div>
+          )
+        ) : (
+          // Non-owner view - everything is hidden
+          <div className="text-center space-y-1">
+            <QuestionMarkCircleIcon className="w-10 h-10 mx-auto text-slate-500" />
+            <div className="text-xs text-slate-400">???</div>
           </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {pages.length === 0 && (
-        <div className="card text-center py-12">
-          <SparklesIcon className="w-16 h-16 mx-auto text-dark-600 mb-4" />
-          <h3 className="text-xl font-semibold mb-2">No Pages Yet</h3>
-          <p className="text-dark-400 mb-6">
-            Create your first page to start farming yield
-          </p>
-          <button
-            className="btn-primary mx-auto"
-            onClick={() => openModal('create-page')}
-          >
-            <PlusIcon className="w-4 h-4" />
-            Create First Page
-          </button>
-        </div>
-      )}
-
-      {/* Pages Grid */}
-      <div className="space-y-8">
-        {pages.map((page) => (
-          <motion.div
-            key={page.pageId}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="card"
-          >
-            {/* Page Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-semibold">Page {page.pageId + 1}</h2>
-                <p className="text-sm text-dark-400">
-                  {page.activePlots} / {config?.maxPlotsPerPage || 5} plots active
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-dark-400">Total Balance</p>
-                <p className="text-xl font-bold text-primary-400">
-                  {formatBalance(page.totalBalance)}
-                </p>
-              </div>
-            </div>
-
-            {/* Plots Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-              {page.plots.map((plot) => (
-                <motion.button
-                  key={plot.plotId}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => handlePlotClick(page.pageId, plot.plotId, plot)}
-                  className={`relative p-4 rounded-xl border-2 transition-all ${
-                    plot.isLocked
-                      ? 'border-danger-600/50 bg-danger-900/20 cursor-not-allowed'
-                      : selectedPage === page.pageId && selectedPlot === plot.plotId
-                      ? 'border-primary-500 bg-primary-600/20'
-                      : plot.isEmpty
-                      ? 'border-dashed border-dark-600 hover:border-dark-500 bg-dark-800/50'
-                      : 'border-dark-600 hover:border-primary-600/50 bg-dark-800'
-                  }`}
-                >
-                  {/* Lock Icon */}
-                  {plot.isLocked && (
-                    <div className="absolute top-2 right-2">
-                      <LockClosedIcon className="w-4 h-4 text-danger-400" />
-                    </div>
-                  )}
-
-                  {/* Plot Content */}
-                  <div className="text-center">
-                    <p className="text-xs text-dark-400 mb-1">Plot {plot.plotId + 1}</p>
-                    
-                    {plot.isEmpty ? (
-                      <div className="py-4">
-                        <PlusIcon className="w-6 h-6 mx-auto text-dark-500" />
-                        <p className="text-xs text-dark-500 mt-1">Empty</p>
-                      </div>
-                    ) : (
-                      <>
-                        <p className="text-lg font-bold">
-                          {formatBalance(plot.balance)}
-                        </p>
-                        <p className="text-xs text-primary-400 mt-1">
-                          +{formatBalance(plot.estimatedYield)}
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-
-            {/* Page Actions */}
-            <div className="flex flex-wrap gap-3 mt-6 pt-4 border-t border-dark-700">
-              <button className="btn-primary text-sm">
-                <SparklesIcon className="w-4 h-4" />
-                Claim All
-              </button>
-              <button className="btn-secondary text-sm">
-                <ArrowDownTrayIcon className="w-4 h-4" />
-                Deposit
-              </button>
-              <button className="btn-secondary text-sm">
-                <ArrowUpTrayIcon className="w-4 h-4" />
-                Withdraw
-              </button>
-            </div>
-          </motion.div>
-        ))}
+        )}
       </div>
 
-      {/* Selected Plot Actions */}
+      {/* Actions (only for owner) */}
+      {isOwnerView && (
+        <div className="mt-auto">
+          {hasContent ? (
+            <button
+              onClick={onWithdraw}
+              className="w-full px-2 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-colors"
+            >
+              <ArrowUpIcon className="w-3 h-3" />
+              Withdraw
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowDepositModal(true)}
+              className="w-full px-2 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-colors"
+            >
+              <ArrowDownIcon className="w-3 h-3" />
+              Deposit
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Deposit Modal */}
       <AnimatePresence>
-        {selectedPage !== null && selectedPlot !== null && (
+        {showDepositModal && (
           <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+            onClick={() => setShowDepositModal(false)}
           >
-            <div className="card bg-dark-800 shadow-2xl flex items-center gap-4">
-              <span className="text-sm text-dark-400">
-                Page {selectedPage + 1}, Plot {selectedPlot + 1}
-              </span>
-              <div className="h-6 w-px bg-dark-600" />
-              <button className="btn-primary text-sm">Deposit</button>
-              <button className="btn-secondary text-sm">Withdraw</button>
-              <button className="btn-ghost text-sm">Claim</button>
-              <button
-                onClick={clearSelection}
-                className="btn-ghost text-sm text-dark-400"
-              >
-                Cancel
-              </button>
-            </div>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-slate-800 rounded-xl p-6 w-full max-w-sm mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold mb-4">Deposit to Plot #{plot.plotId + 1}</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-slate-400 mb-1 block">Amount</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full px-4 py-3 bg-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    />
+                    <button
+                      onClick={() => setDepositAmount(balance.toString())}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-yellow-500 hover:text-yellow-400"
+                    >
+                      MAX
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Available: {formatBalance(balance)} Tokens
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDepositModal(false)}
+                    className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeposit}
+                    disabled={!depositAmount || parseFloat(depositAmount) <= 0 || parseFloat(depositAmount) > balance}
+                    className="flex-1 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:bg-slate-600 disabled:text-slate-400 text-slate-900 rounded-lg font-medium transition-colors"
+                  >
+                    Deposit
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+    </motion.div>
+  )
+}
+
+export default function Farm() {
+  const { connected } = useWalletStore()
+  const { 
+    playerFarm, 
+    stats,
+    isInitialized,
+    setupPlot, 
+    withdrawFromPlot, 
+    claimYield,
+    tickYield,
+    initializePlayer,
+  } = useGameData()
+  const { settings } = useTestSettings()
+  
+  const [showRaiderView, setShowRaiderView] = useState(false)
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+
+  // Initialize player if not already
+  useEffect(() => {
+    if (connected && !isInitialized) {
+      initializePlayer(10000) // Start with 10k tokens for testing
+    }
+  }, [connected, isInitialized, initializePlayer])
+
+  // Yield ticking - updates every second
+  useEffect(() => {
+    if (!playerFarm || playerFarm.totalStaked === 0) return
+
+    const interval = setInterval(() => {
+      tickYield({
+        apyPercent: settings.apyPercent,
+        dayDurationSeconds: settings.dayDurationSeconds,
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [playerFarm?.totalStaked, settings.apyPercent, settings.dayDurationSeconds, tickYield])
+
+  const handleDeposit = useCallback((plotId: number, amount: number) => {
+    const success = setupPlot(plotId, amount)
+    if (success) {
+      setNotification({ type: 'success', message: `Deposited ${formatBalance(amount)} tokens to Plot #${plotId + 1}` })
+    } else {
+      setNotification({ type: 'error', message: 'Deposit failed. Check your balance.' })
+    }
+    setTimeout(() => setNotification(null), 3000)
+  }, [setupPlot])
+
+  const handleWithdraw = useCallback((plotId: number) => {
+    const amount = withdrawFromPlot(plotId)
+    if (amount > 0) {
+      setNotification({ type: 'success', message: `Withdrew ${formatBalance(amount)} tokens from Plot #${plotId + 1}` })
+    } else {
+      setNotification({ type: 'error', message: 'Nothing to withdraw from this plot.' })
+    }
+    setTimeout(() => setNotification(null), 3000)
+  }, [withdrawFromPlot])
+
+  const handleClaimYield = useCallback(() => {
+    const amount = claimYield()
+    if (amount > 0) {
+      setNotification({ type: 'success', message: `Claimed ${formatBalance(amount)} yield!` })
+    } else {
+      setNotification({ type: 'error', message: 'No yield to claim.' })
+    }
+    setTimeout(() => setNotification(null), 3000)
+  }, [claimYield])
+
+  // Not connected state
+  if (!connected) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4"
+      >
+        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center mb-6 border border-yellow-500/30">
+          <SparklesIcon className="w-10 h-10 text-yellow-400" />
+        </div>
+        <h2 className="text-2xl font-bold mb-3">Ready to Stake?</h2>
+        <p className="text-slate-400 max-w-md mb-6">
+          Connect your wallet to view and manage your staking plots.
+          Stake coins to earn yield! 💰
+        </p>
+        <div className="flex items-center gap-2 text-slate-500">
+          <WalletIcon className="w-5 h-5" />
+          <span>Connect wallet to continue</span>
+        </div>
+      </motion.div>
+    )
+  }
+
+  // Loading/Initializing state
+  if (!isInitialized || !playerFarm) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+      </div>
+    )
+  }
+
+  const pendingYield = playerFarm.pendingYield
+  const yieldPerPlot = playerFarm.plots.filter(p => p.hasTokens).length > 0
+    ? pendingYield / playerFarm.plots.filter(p => p.hasTokens).length
+    : 0
+
+  return (
+    <div className="min-h-screen pb-24 px-4 pt-4">
+      {/* Notification */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg flex items-center gap-2 ${
+              notification.type === 'success' ? 'bg-green-500/90' : 'bg-red-500/90'
+            }`}
+          >
+            {notification.type === 'success' ? (
+              <CheckCircleIcon className="w-5 h-5" />
+            ) : (
+              <XCircleIcon className="w-5 h-5" />
+            )}
+            {notification.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Header Stats */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold">Your Stakes</h1>
+          <button
+            onClick={() => setShowRaiderView(!showRaiderView)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              showRaiderView
+                ? 'bg-red-500/20 text-red-400'
+                : 'bg-slate-700 text-slate-300'
+            }`}
+          >
+            {showRaiderView ? (
+              <>
+                <EyeSlashIcon className="w-4 h-4" />
+                Thief View
+              </>
+            ) : (
+              <>
+                <EyeIcon className="w-4 h-4" />
+                Owner View
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50">
+            <div className="text-xs text-slate-400 mb-1">Total Staked</div>
+            <div className="text-xl font-bold text-yellow-400">
+              {formatBalance(playerFarm.totalStaked)}
+            </div>
+          </div>
+          <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50">
+            <div className="text-xs text-slate-400 mb-1">Pending Yield</div>
+            <div className="text-xl font-bold text-green-400">
+              {formatBalance(pendingYield)}
+            </div>
+          </div>
+          <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50">
+            <div className="text-xs text-slate-400 mb-1">APY</div>
+            <div className="text-xl font-bold text-purple-400">
+              {settings.apyPercent}%
+            </div>
+          </div>
+          <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50">
+            <div className="text-xs text-slate-400 mb-1">Active Plots</div>
+            <div className="text-xl font-bold text-blue-400">
+              {playerFarm.plots.filter(p => p.hasTokens).length} / {PLOTS_COUNT}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Claim Yield Button */}
+      {pendingYield > 0 && (
+        <motion.button
+          onClick={handleClaimYield}
+          className="w-full mb-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <SparklesIcon className="w-6 h-6" />
+          Claim {formatBalance(pendingYield)} Yield
+        </motion.button>
+      )}
+
+      {/* Raider View Warning */}
+      {showRaiderView && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl"
+        >
+          <div className="flex items-start gap-3">
+            <EyeSlashIcon className="w-6 h-6 text-red-400 flex-shrink-0" />
+            <div>
+              <h3 className="font-bold text-red-400 mb-1">Raider View Mode</h3>
+              <p className="text-sm text-slate-400">
+                This is how other players (raiders) see your farm. They cannot tell which plots have tokens - 
+                they must guess! The more you spread your tokens, the harder it is for them to steal.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Plots Grid - Centered Responsive Layout */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-slate-300 text-center">Your Plots</h2>
+        <div className="flex flex-wrap gap-4 justify-center items-stretch">
+          {playerFarm.plots.map((plot) => (
+            <div key={plot.plotId} className="w-[160px] min-w-[160px]">
+              <PlotCard
+                plot={plot}
+                isOwnerView={!showRaiderView}
+                onDeposit={(amount) => handleDeposit(plot.plotId, amount)}
+                onWithdraw={() => handleWithdraw(plot.plotId)}
+                pendingYieldShare={plot.hasTokens ? yieldPerPlot : 0}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Info Section */}
+      <div className="mt-8 p-4 bg-slate-800/40 rounded-xl border border-slate-700/30">
+        <h3 className="font-bold mb-2 flex items-center gap-2">
+          <QuestionMarkCircleIcon className="w-5 h-5 text-yellow-500" />
+          How Hidden Plots Work
+        </h3>
+        <ul className="text-sm text-slate-400 space-y-2">
+          <li>• You have 5 plots to hide your tokens</li>
+          <li>• Only YOU can see which plots have tokens</li>
+          <li>• Raiders must guess the correct plot to steal</li>
+          <li>• Spread tokens across plots = lower risk per raid</li>
+          <li>• Concentrate in one plot = higher yield but higher risk</li>
+        </ul>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="mt-6 p-4 bg-slate-800/40 rounded-xl border border-slate-700/30">
+        <h3 className="font-bold mb-3">Your Stats</h3>
+        <div className="grid grid-cols-2 gap-y-2 text-sm">
+          <span className="text-slate-400">Total Deposited:</span>
+          <span className="text-right">{formatBalance(stats.totalDeposited)}</span>
+          <span className="text-slate-400">Total Withdrawn:</span>
+          <span className="text-right">{formatBalance(stats.totalWithdrawn)}</span>
+          <span className="text-slate-400">Total Yield Earned:</span>
+          <span className="text-right text-green-400">{formatBalance(stats.totalYieldEarned)}</span>
+          <span className="text-slate-400">Lost to Raids:</span>
+          <span className="text-right text-red-400">{formatBalance(stats.totalLostToRaids)}</span>
+        </div>
+      </div>
     </div>
   )
 }

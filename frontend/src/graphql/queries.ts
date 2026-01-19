@@ -63,12 +63,12 @@ export const RAID_STATE_FRAGMENT = gql`
 export const CONFIG_FRAGMENT = gql`
   fragment ConfigFields on GameConfigInfo {
     yieldRateBps
-    stealSuccessRate
+    minStealStake
     stealCooldownBlocks
     maxPages
     maxPlotsPerPage
     minDeposit
-    maxStealPercentage
+    stealPercentage
   }
 `
 

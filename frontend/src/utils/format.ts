@@ -3,13 +3,44 @@
  */
 
 /**
- * Format a balance string to a human-readable format
- * @param balance - The balance as a string (may be very large)
- * @param decimals - Number of decimal places (default: 6)
+ * Format a balance to a human-readable format
+ * Handles both string and number inputs
+ * @param balance - The balance as a string or number
+ * @param decimals - Number of decimal places for on-chain values (default: 0 for local numbers)
  * @returns Formatted balance string
  */
-export function formatBalance(balance: string, decimals: number = 6): string {
+export function formatBalance(balance: string | number | bigint, decimals: number = 0): string {
   try {
+    // Handle number inputs (used for local state)
+    if (typeof balance === 'number') {
+      // For small numbers, show with 2 decimal places
+      if (Math.abs(balance) < 0.01 && balance !== 0) {
+        return balance.toExponential(2)
+      }
+      // Format with commas and up to 2 decimal places
+      return balance.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      })
+    }
+
+    // Handle bigint inputs
+    if (typeof balance === 'bigint') {
+      return balance.toLocaleString('en-US')
+    }
+
+    // Handle string inputs (on-chain values)
+    if (decimals === 0) {
+      // No decimals means treat as already formatted number
+      const num = parseFloat(balance)
+      if (isNaN(num)) return '0'
+      return num.toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      })
+    }
+
+    // Full decimal conversion for on-chain values
     const value = BigInt(balance)
     const divisor = BigInt(10 ** decimals)
     const wholePart = value / divisor

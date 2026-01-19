@@ -1,5 +1,5 @@
 {
-  "name": "steal-and-yield-frontend",
+  "name": "stake-and-steal-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -13,6 +13,7 @@
     "@apollo/client": "^3.8.8",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.1.1",
+    "ethers": "^6.9.0",
     "framer-motion": "^10.16.16",
     "graphql": "^16.8.1",
     "react": "^18.2.0",

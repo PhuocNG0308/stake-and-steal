@@ -1,8 +1,8 @@
 [package]
-name = "steal-and-yield"
+name = "stake-and-steal"
 version = "0.1.0"
 edition = "2021"
-description = "A GameFi application on Linera with Yield Farming and PvP Stealing mechanics"
+description = "Stake and Steal - A GameFi application on Linera with Yield Farming and PvP Stealing mechanics"
 authors = ["RedZero Team"]
 
 [dependencies]
@@ -21,11 +21,11 @@ linera-sdk = { version = "0.15.8", features = ["test"] }
 tokio = { version = "1.38", features = ["rt", "sync", "macros"] }
 
 [[bin]]
-name = "steal_and_yield_contract"
+name = "stake_and_steal_contract"
 path = "src/contract.rs"
 
 [[bin]]
-name = "steal_and_yield_service"
+name = "stake_and_steal_service"
 path = "src/service.rs"
 
 [features]

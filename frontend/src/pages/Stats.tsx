@@ -1,4 +1,3 @@
-import { useQuery } from '@apollo/client'
 import { motion } from 'framer-motion'
 import {
   ChartBarIcon,
@@ -7,19 +6,53 @@ import {
   BoltIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
+  WalletIcon,
 } from '@heroicons/react/24/outline'
-import { GET_STATS, GET_POWER_SCORE } from '@/graphql/queries'
 import { formatBalance, formatPercentage } from '@/utils/format'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
+import { useWalletStore } from '@/stores'
+import { useGameData } from '@/stores/gameDataStore'
 
 export default function Stats() {
-  const { data: statsData, loading } = useQuery(GET_STATS)
-  const { data: powerData } = useQuery(GET_POWER_SCORE)
+  const { connected } = useWalletStore()
+  const { stats: gameStats, isInitialized, playerFarm } = useGameData()
+  
+  // Use live stats from game data store
+  const stats = gameStats
+  const powerScore = gameStats 
+    ? Math.floor(
+        gameStats.totalDeposited * 0.5 + 
+        gameStats.totalYieldEarned * 1.5 + 
+        gameStats.successfulRaids * 100 -
+        gameStats.failedRaids * 20
+      )
+    : 0
 
-  const stats = statsData?.stats
-  const powerScore = powerData?.powerScore || 0
+  // Not connected state
+  if (!connected) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4"
+      >
+        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-500/20 to-primary-600/20 flex items-center justify-center mb-6 border border-primary-500/30">
+          <ChartBarIcon className="w-10 h-10 text-primary-400" />
+        </div>
+        <h2 className="text-2xl font-bold mb-3">View Your Stats</h2>
+        <p className="text-dark-400 max-w-md mb-6">
+          Connect your wallet to view your complete game statistics, combat record, and achievements.
+        </p>
+        <div className="flex items-center gap-2 text-dark-500">
+          <WalletIcon className="w-5 h-5" />
+          <span>Connect wallet to view statistics</span>
+        </div>
+      </motion.div>
+    )
+  }
 
-  if (loading) {
+  // Loading state
+  if (!isInitialized) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
@@ -80,16 +113,16 @@ export default function Stats() {
           <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-dark-800 rounded-lg">
               <span className="text-dark-400">Total Deposited</span>
-              <span className="font-semibold">{formatBalance(stats?.totalDeposited || '0')}</span>
+              <span className="font-semibold">{formatBalance(stats?.totalDeposited || 0)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-dark-800 rounded-lg">
               <span className="text-dark-400">Total Withdrawn</span>
-              <span className="font-semibold">{formatBalance(stats?.totalWithdrawn || '0')}</span>
+              <span className="font-semibold">{formatBalance(stats?.totalWithdrawn || 0)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-green-900/20 border border-green-600/30 rounded-lg">
               <span className="text-green-400">Total Yield Earned</span>
               <span className="font-semibold text-green-400">
-                +{formatBalance(stats?.totalYieldEarned || '0')}
+                +{formatBalance(stats?.totalYieldEarned || 0)}
               </span>
             </div>
           </div>
@@ -110,18 +143,20 @@ export default function Stats() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 bg-green-900/20 border border-green-600/30 rounded-lg text-center">
-                <p className="text-3xl font-bold text-green-400">{stats?.successfulSteals || 0}</p>
+                <p className="text-3xl font-bold text-green-400">{stats?.successfulRaids || 0}</p>
                 <p className="text-xs text-dark-400">Successful Steals</p>
               </div>
               <div className="p-3 bg-danger-900/20 border border-danger-600/30 rounded-lg text-center">
-                <p className="text-3xl font-bold text-danger-400">{stats?.failedSteals || 0}</p>
+                <p className="text-3xl font-bold text-danger-400">{stats?.failedRaids || 0}</p>
                 <p className="text-xs text-dark-400">Failed Steals</p>
               </div>
             </div>
             <div className="flex justify-between items-center p-3 bg-dark-800 rounded-lg">
               <span className="text-dark-400">Win Rate</span>
               <span className="font-semibold text-primary-400">
-                {formatPercentage(stats?.winRate || 0)}
+                {stats && (stats.successfulRaids + stats.failedRaids) > 0 
+                  ? formatPercentage((stats.successfulRaids / (stats.successfulRaids + stats.failedRaids)) * 100)
+                  : '0%'}
               </span>
             </div>
           </div>
@@ -143,24 +178,24 @@ export default function Stats() {
             <div className="flex justify-between items-center p-3 bg-green-900/20 border border-green-600/30 rounded-lg">
               <span className="text-green-400">Stolen from Others</span>
               <span className="font-semibold text-green-400">
-                +{formatBalance(stats?.totalStolenFromOthers || '0')}
+                +{formatBalance(stats?.totalStolen || 0)}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-danger-900/20 border border-danger-600/30 rounded-lg">
               <span className="text-danger-400">Lost to Thieves</span>
               <span className="font-semibold text-danger-400">
-                -{formatBalance(stats?.totalLostToThieves || '0')}
+                -{formatBalance(stats?.totalLostToRaids || 0)}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-dark-800 rounded-lg">
               <span className="text-dark-400">Net Theft</span>
               <span className={`font-semibold ${
-                BigInt(stats?.totalStolenFromOthers || 0) > BigInt(stats?.totalLostToThieves || 0)
+                (stats?.totalStolen || 0) > (stats?.totalLostToRaids || 0)
                   ? 'text-green-400'
                   : 'text-danger-400'
               }`}>
                 {formatBalance(
-                  (BigInt(stats?.totalStolenFromOthers || 0) - BigInt(stats?.totalLostToThieves || 0)).toString()
+                  (stats?.totalStolen || 0) - (stats?.totalLostToRaids || 0)
                 )}
               </span>
             </div>
@@ -212,10 +247,10 @@ export default function Stats() {
         <h3 className="font-semibold mb-4">Achievements</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { name: 'First Deposit', unlocked: true },
-            { name: 'First Steal', unlocked: stats?.successfulSteals > 0 },
-            { name: 'Yield Master', unlocked: false },
-            { name: 'Legendary Thief', unlocked: false },
+            { name: 'First Deposit', unlocked: stats && stats.totalDeposited > 0 },
+            { name: 'First Steal', unlocked: stats && stats.successfulRaids > 0 },
+            { name: 'Yield Master', unlocked: stats && stats.totalYieldEarned > 1000 },
+            { name: 'Legendary Thief', unlocked: stats && stats.totalStolen > 5000 },
           ].map((achievement) => (
             <div
               key={achievement.name}

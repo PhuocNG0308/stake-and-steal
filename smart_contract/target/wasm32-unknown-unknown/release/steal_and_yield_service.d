@@ -1,1 +1,0 @@
-D:\RedZero\Web\Stake\ &\ Steal\smart_contract\target\wasm32-unknown-unknown\release\steal_and_yield_service.wasm: D:\RedZero\Web\Stake\ &\ Steal\smart_contract\src\lib.rs D:\RedZero\Web\Stake\ &\ Steal\smart_contract\src\service.rs D:\RedZero\Web\Stake\ &\ Steal\smart_contract\src\state.rs
