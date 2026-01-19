@@ -1,0 +1,14 @@
+D:\RedZero\Web\Stake & Steal\smart_contract\target\wasm32-unknown-unknown\release\deps\serde-656c7cbefb0f95ad.d: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs D:\RedZero\Web\Stake\ &\ Steal\smart_contract\target\wasm32-unknown-unknown\release\build\serde-ab4118c3d7a5906e\out/private.rs
+
+D:\RedZero\Web\Stake & Steal\smart_contract\target\wasm32-unknown-unknown\release\deps\libserde-656c7cbefb0f95ad.rlib: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs D:\RedZero\Web\Stake\ &\ Steal\smart_contract\target\wasm32-unknown-unknown\release\build\serde-ab4118c3d7a5906e\out/private.rs
+
+D:\RedZero\Web\Stake & Steal\smart_contract\target\wasm32-unknown-unknown\release\deps\libserde-656c7cbefb0f95ad.rmeta: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs D:\RedZero\Web\Stake\ &\ Steal\smart_contract\target\wasm32-unknown-unknown\release\build\serde-ab4118c3d7a5906e\out/private.rs
+
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs:
+D:\RedZero\Web\Stake\ &\ Steal\smart_contract\target\wasm32-unknown-unknown\release\build\serde-ab4118c3d7a5906e\out/private.rs:
+
+# env-dep:OUT_DIR=D:\\RedZero\\Web\\Stake & Steal\\smart_contract\\target\\wasm32-unknown-unknown\\release\\build\\serde-ab4118c3d7a5906e\\out
