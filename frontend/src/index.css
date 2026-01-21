@@ -1,145 +1,1366 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   🎮 STAKE AND STEAL - CSS VARIABLES & THEMES
+   ============================================ */
+
+:root,
+[data-theme="dark"] {
+  /* 🌌 Background */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  
+  /* 🎨 Panel & Card Colors */
+  --panel-bg: rgba(15, 23, 42, 0.9);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --card-bg: rgba(30, 41, 59, 0.95);
+  
+  /* ✨ Accent Colors */
+  --accent-primary: #facc15;
+  --accent-secondary: #22c55e;
+  --accent-danger: #ef4444;
+  
+  /* 📝 Text Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  /* Border & Dividers */
+  --border-color: rgba(255, 255, 255, 0.1);
+  
+  /* ✨ Effects */
+  --glow-primary: rgba(250, 204, 21, 0.3);
+  --glow-success: rgba(34, 197, 94, 0.3);
+  --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #e2e8f0;
+  --bg-tertiary: #cbd5e1;
+  
+  --panel-bg: rgba(255, 255, 255, 0.95);
+  --panel-border: rgba(0, 0, 0, 0.1);
+  --card-bg: rgba(248, 250, 252, 0.95);
+  
+  --accent-primary: #d97706;
+  --accent-secondary: #16a34a;
+  --accent-danger: #dc2626;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --border-color: rgba(0, 0, 0, 0.1);
+  
+  --glow-primary: rgba(217, 119, 6, 0.2);
+  --glow-success: rgba(22, 163, 74, 0.2);
+  --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="neon"] {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a25;
+  
+  --panel-bg: rgba(10, 10, 15, 0.95);
+  --panel-border: rgba(139, 92, 246, 0.3);
+  --card-bg: rgba(18, 18, 26, 0.95);
+  
+  --accent-primary: #8b5cf6;
+  --accent-secondary: #06b6d4;
+  --accent-danger: #f43f5e;
+  
+  --text-primary: #e0e7ff;
+  --text-secondary: #a5b4fc;
+  --text-muted: #6366f1;
+  
+  --border-color: rgba(139, 92, 246, 0.2);
+  
+  --glow-primary: rgba(139, 92, 246, 0.4);
+  --glow-success: rgba(6, 182, 212, 0.4);
+  --shadow-panel: 0 8px 32px rgba(139, 92, 246, 0.2);
+}
+
+[data-theme="retro"] {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-tertiary: #0f3460;
+  
+  --panel-bg: rgba(26, 26, 46, 0.95);
+  --panel-border: rgba(233, 69, 96, 0.3);
+  --card-bg: rgba(22, 33, 62, 0.95);
+  
+  --accent-primary: #e94560;
+  --accent-secondary: #0f3460;
+  --accent-danger: #ff6b6b;
+  
+  --text-primary: #eaeaea;
+  --text-secondary: #c4c4c4;
+  --text-muted: #888888;
+  
+  --border-color: rgba(233, 69, 96, 0.2);
+  
+  --glow-primary: rgba(233, 69, 96, 0.4);
+  --glow-success: rgba(15, 52, 96, 0.4);
+  --shadow-panel: 0 8px 32px rgba(233, 69, 96, 0.15);
+}
+
+/* Legacy Variables for backward compatibility */
+:root {
+  --gold-light: #FFD700;
+  --gold-main: #FFC107;
+  --gold-dark: #BC7800;
+  --farm-light: #9CCC65;
+  --farm-main: #7CB342;
+  --farm-dark: #558B2F;
+  --ruby-light: #EF5350;
+  --ruby-main: #E53935;
+  --ruby-dark: #C62828;
+}
+
+/* ============================================
+   🎮 BASE STYLES
+   ============================================ */
+
 @layer base {
   * {
-    @apply border-dark-700;
+    border-color: var(--border-color);
   }
 
   body {
-    @apply bg-dark-950 text-dark-100 antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    @apply antialiased;
   }
 
+  /* Custom Scrollbar */
   ::-webkit-scrollbar {
     @apply w-2 h-2;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-dark-900;
+    background: var(--bg-secondary);
+    border-radius: 10px;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-dark-600 rounded-full;
+    background: var(--accent-primary);
+    border-radius: 10px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-dark-500;
+    background: var(--accent-secondary);
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Text shadow utility */
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 }
 
+/* ============================================
+   🎮 GAME UI COMPONENTS
+   ============================================ */
+
 @layer components {
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+
+  /* ============================================
+     🎴 GAME PANEL - Semi-transparent card style
+     ============================================ */
+  
+  .game-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 1.5rem;
+    @apply p-6;
+    box-shadow: var(--shadow-panel);
   }
 
-  .btn-primary {
-    @apply btn bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/20;
+  .game-panel-sm {
+    @apply game-panel p-4;
+    border-radius: 1rem;
   }
 
+  .game-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    @apply p-4;
+    transition: all 0.2s ease;
+  }
+
+  .game-card:hover {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 20px var(--glow-primary);
+  }
+
+  /* ============================================
+     🏆 BUTTONS - Game Style
+     ============================================ */
+  
+  /* Primary Gold Button */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-base transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, #FFD700 0%, #FFA000 100%);
+    color: #1a1a1a;
+    border: none;
+    box-shadow: 0 4px 0 var(--gold-dark), 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-gold:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 var(--gold-dark), 0 10px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .btn-gold:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--gold-dark), 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Success Green Button */
+  .btn-green {
+    @apply btn-gold;
+    background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+    box-shadow: 0 4px 0 #166534, 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-green:hover:not(:disabled) {
+    box-shadow: 0 6px 0 #166534, 0 10px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .btn-green:active:not(:disabled) {
+    box-shadow: 0 2px 0 #166534, 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Danger Red Button */
   .btn-danger {
-    @apply btn bg-danger-600 hover:bg-danger-700 text-white shadow-lg shadow-danger-600/20;
+    @apply btn-gold;
+    background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 4px 0 #991b1b, 0 6px 12px rgba(0, 0, 0, 0.3);
   }
 
+  .btn-danger:hover:not(:disabled) {
+    box-shadow: 0 6px 0 #991b1b, 0 10px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .btn-danger:active:not(:disabled) {
+    box-shadow: 0 2px 0 #991b1b, 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Secondary/Ghost Button */
   .btn-secondary {
-    @apply btn bg-dark-700 hover:bg-dark-600 text-white border border-dark-600;
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-bold text-base transition-all duration-200;
+    border-radius: 1rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
   }
 
+  .btn-secondary:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent-primary);
+  }
+
+  /* Primary Button (alias for btn-gold) */
+  .btn-primary {
+    @apply btn-gold;
+  }
+
+  /* ============================================
+     🎚️ Toggle Switch
+     ============================================ */
+  
+  .toggle {
+    @apply relative w-14 h-8 rounded-full cursor-pointer transition-all duration-300;
+    background: var(--bg-tertiary);
+  }
+
+  .toggle.active {
+    background: var(--accent-secondary);
+  }
+
+  .toggle-knob {
+    @apply absolute top-1 left-1 w-6 h-6 rounded-full transition-all duration-300;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .toggle.active .toggle-knob {
+    transform: translateX(1.5rem);
+  }
+
+  /* ============================================
+     📊 Stat Badge
+     ============================================ */
+  
+  .stat-badge {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+  }
+
+  .stat-badge-gold {
+    @apply stat-badge;
+    background: rgba(250, 204, 21, 0.2);
+    border-color: rgba(250, 204, 21, 0.3);
+    color: #facc15;
+  }
+
+  .stat-badge-green {
+    @apply stat-badge;
+    background: rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+  }
+
+  .stat-badge-red {
+    @apply stat-badge;
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+
+  /* ============================================
+     Legacy Button Classes (for backward compat)
+     ============================================ */
+  
+  .btn-royal {
+    @apply btn-gold;
+    border-radius: 2rem;
+    @apply px-8 py-4 text-lg font-black;
+  }
+
+  .btn-farm {
+    @apply btn-green;
+    border-radius: 2rem;
+    @apply px-8 py-4 text-lg font-black;
+  }
+
+  .btn-ruby {
+    @apply btn-danger;
+    border-radius: 2rem;
+    @apply px-8 py-4 text-lg font-black;
+  }
+
+  /* Legacy Card Panel */
+  .card-panel {
+    @apply game-panel;
+  }
+}
+
+/* ============================================
+   Legacy Royal Match UI (for backward compat)
+   ============================================ */
+
+@layer components {
+  /* Ruby Button Variant */
+  .btn-ruby-legacy {
+    @apply btn-royal;
+    background: linear-gradient(180deg, #EF5350 0%, #D32F2F 100%);
+    border-color: #C62828;
+    box-shadow: 
+      0 6px 0 #B71C1C,
+      0 10px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .btn-ruby:hover {
+    box-shadow: 
+      0 9px 0 #B71C1C,
+      0 15px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .btn-ruby:active {
+    box-shadow: 
+      0 2px 0 #B71C1C,
+      0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Secondary White Button */
+  .btn-secondary {
+    @apply btn-royal;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%);
+    color: var(--text-oak);
+    border-color: #D4A76A;
+    box-shadow: 
+      0 6px 0 #8B6F47,
+      0 10px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-secondary:hover {
+    box-shadow: 
+      0 9px 0 #8B6F47,
+      0 15px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .btn-secondary:active {
+    box-shadow: 
+      0 2px 0 #8B6F47,
+      0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  /* ============================================
+     🎴 CARD PANEL - Wooden Cream Style
+     ============================================ */
+
+  .card-panel {
+    background: linear-gradient(180deg, var(--panel-cream) 0%, #FFF3D6 100%);
+    border: 4px solid var(--panel-border);
+    border-radius: 2.5rem;
+    @apply p-6;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-panel);
+  }
+
+  /* Glossy Top Shine */
+  .card-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, transparent 100%);
+    border-radius: 2.25rem 2.25rem 0 0;
+    pointer-events: none;
+  }
+
+  .card-panel:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Oak Wood Panel */
+  .panel-oak {
+    background: linear-gradient(135deg, #E6C288 0%, #C19A6B 100%);
+    border: 5px solid #5D4037;
+    border-radius: 2.5rem;
+    @apply p-6;
+    position: relative;
+    box-shadow: 
+      inset 0 3px 8px rgba(0, 0, 0, 0.2),
+      0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Wood Grain Texture */
+  .panel-oak::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 3px,
+        rgba(93, 64, 55, 0.05) 3px,
+        rgba(93, 64, 55, 0.05) 6px
+      );
+    border-radius: 2.25rem;
+    pointer-events: none;
+  }
+
+  .panel-oak::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+    border-radius: 2.25rem 2.25rem 0 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ============================================
+     🏅 STAT BADGE - Royal Medal Style
+     ============================================ */
+
+  .stat-badge {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F0F0F0 100%);
+    border: 4px solid #6F5639;
+    border-radius: 2rem;
+    @apply p-5;
+    position: relative;
+    overflow: visible;
+    box-shadow: 
+      0 6px 0 #3E2723,
+      0 10px 20px rgba(0, 0, 0, 0.35);
+    text-align: center;
+  }
+
+  .stat-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, transparent 100%);
+    border-radius: 1.75rem 1.75rem 0 0;
+    pointer-events: none;
+  }
+
+  /* Gold Badge */
+  .stat-badge-gold {
+    @apply stat-badge;
+    background: linear-gradient(180deg, #FFD700 0%, #FFA000 100%);
+    border-color: #FF8F00;
+    box-shadow: 
+      0 6px 0 var(--gold-dark),
+      0 10px 20px rgba(255, 215, 0, 0.4);
+  }
+
+  /* Green Badge */
+  .stat-badge-green {
+    @apply stat-badge;
+    background: linear-gradient(180deg, #9CCC65 0%, #689F38 100%);
+    border-color: #558B2F;
+    box-shadow: 
+      0 6px 0 #33691E,
+      0 10px 20px rgba(124, 179, 66, 0.4);
+  }
+
+  /* Emerald Badge */
+  .stat-badge-emerald {
+    @apply stat-badge;
+    background: linear-gradient(180deg, #4DB6AC 0%, #00897B 100%);
+    border-color: #00695C;
+    box-shadow: 
+      0 6px 0 #004D40,
+      0 10px 20px rgba(0, 150, 136, 0.4);
+  }
+
+  /* Ruby Badge */
+  .stat-badge-ruby {
+    @apply stat-badge;
+    background: linear-gradient(180deg, #EF5350 0%, #D32F2F 100%);
+    border-color: #C62828;
+    box-shadow: 
+      0 6px 0 #B71C1C,
+      0 10px 20px rgba(244, 67, 54, 0.4);
+  }
+
+  /* ============================================
+     🪵 NAV SHELF - Wooden/Metal Bottom Bar
+     ============================================ */
+
+  .nav-shelf {
+    background: linear-gradient(180deg, #D4AF37 0%, #B8941F 100%);
+    border-top: 4px solid #8B7519;
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      0 -4px 20px rgba(0, 0, 0, 0.4);
+    position: relative;
+  }
+
+  /* Metal Shine Effect */
+  .nav-shelf::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  /* Nav Icon Button */
+  .nav-icon-btn {
+    @apply flex flex-col items-center justify-center p-3 rounded-2xl transition-all;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%);
+    border: 3px solid #D4A76A;
+    box-shadow: 
+      0 4px 0 #8B6F47,
+      0 6px 12px rgba(0, 0, 0, 0.3);
+    position: relative;
+  }
+
+  .nav-icon-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, transparent 100%);
+    border-radius: 1.25rem 1.25rem 0 0;
+    pointer-events: none;
+  }
+
+  .nav-icon-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+      0 6px 0 #8B6F47,
+      0 9px 18px rgba(0, 0, 0, 0.4);
+  }
+
+  .nav-icon-btn:active {
+    transform: translateY(2px);
+    box-shadow: 
+      0 2px 0 #8B6F47,
+      0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .nav-icon-btn-active {
+    @apply nav-icon-btn;
+    background: linear-gradient(180deg, #FFD700 0%, #FFA000 100%);
+    border-color: #FF8F00;
+    box-shadow: 
+      0 4px 0 var(--gold-dark),
+      0 6px 12px rgba(255, 215, 0, 0.5);
+  }
+
+  /* ============================================
+     🎯 UTILITY CLASSES
+     ============================================ */
+
+  /* Glossy Resource Capsule */
+  .resource-capsule {
+    @apply flex items-center gap-3 px-5 py-3 rounded-full;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F0F0F0 100%);
+    border: 3px solid #C19A6B;
+    box-shadow: 
+      0 4px 0 #8B6F47,
+      0 6px 12px rgba(0, 0, 0, 0.25);
+    position: relative;
+  }
+
+  .resource-capsule::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, transparent 100%);
+    border-radius: 2rem 2rem 0 0;
+    pointer-events: none;
+  }
+
+  .resource-capsule-gold {
+    @apply resource-capsule;
+    background: linear-gradient(180deg, #FFD700 0%, #FFA000 100%);
+    border-color: #FF8F00;
+    box-shadow: 
+      0 4px 0 var(--gold-dark),
+      0 6px 12px rgba(255, 215, 0, 0.4);
+  }
+
+  /* Text Shadow Styles */
+  .text-shadow-royal {
+    text-shadow: 
+      0 3px 6px rgba(0, 0, 0, 0.4),
+      0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .text-shadow-strong {
+    text-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.5),
+      0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .text-shadow-white {
+    text-shadow: 
+      0 2px 4px rgba(255, 255, 255, 0.8),
+      0 1px 2px rgba(255, 255, 255, 0.5);
+  }
+
+  /* Drop Shadow for Icons */
+  .drop-shadow-royal {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+  }
+
+  /* Input Field - Royal Style */
+  .input-royal {
+    @apply w-full px-5 py-4;
+    background: #FFFFFF;
+    border: 4px solid #C19A6B;
+    border-radius: 1.5rem;
+    color: var(--text-oak);
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  .input-royal:focus {
+    outline: none;
+    border-color: var(--gold-main);
+    box-shadow: 
+      inset 0 3px 6px rgba(0, 0, 0, 0.15),
+      0 0 0 4px rgba(255, 193, 7, 0.2);
+  }
+
+  /* Toggle Switch - Chunky Style */
+  .toggle-royal {
+    @apply relative w-20 h-10 rounded-full cursor-pointer transition-all duration-300;
+    background: #BDBDBD;
+    border: 3px solid #757575;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .toggle-royal.active {
+    background: linear-gradient(90deg, #7CB342 0%, #9CCC65 100%);
+    border-color: #558B2F;
+    box-shadow: 
+      inset 0 2px 6px rgba(0, 0, 0, 0.2),
+      0 0 0 3px rgba(124, 179, 66, 0.3);
+  }
+
+  .toggle-knob-royal {
+    @apply absolute top-0.5 w-8 h-8 rounded-full transition-all duration-300;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F0F0F0 100%);
+    left: 4px;
+    border: 2px solid #D4A76A;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  .toggle-royal.active .toggle-knob-royal {
+    left: calc(100% - 36px);
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFF9C4 100%);
+    border-color: #FFD700;
+  }
+}
+
+/* ============================================
+   ✨ UTILITY ANIMATIONS
+   ============================================ */
+
+@layer utilities {
+  .hover-royal {
+    transition: transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .hover-royal:hover {
+    transform: scale(1.05) translateY(-4px);
+  }
+
+  .animate-shimmer {
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+}
+
+
+/* ============================================
+   🎮 CASUAL GAME UI COMPONENTS
+   ============================================ */
+
+@layer components {
+  /* ============================================
+     🍬 GLOSSY BUTTONS - Royal Match Style
+     ============================================ */
+  
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    border-radius: 1.5rem;
+    position: relative;
+    overflow: visible;
+    font-size: 1.125rem;
+    font-family: 'Baloo 2', sans-serif;
+    text-shadow: 0 2px 4px var(--text-shadow);
+    cursor: pointer;
+  }
+
+  /* 🥕 Primary Orange Button */
+  .btn-primary {
+    @apply btn text-white;
+    background: linear-gradient(180deg, var(--color-carrot-light) 0%, var(--color-carrot) 100%);
+    border: 4px solid var(--color-carrot-dark);
+    border-bottom-width: 6px;
+    box-shadow: 
+      0 6px 0 var(--color-carrot-dark),
+      0 10px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 40%;
+    background: var(--glossy-highlight);
+    border-radius: 1rem 1rem 0 0;
+    opacity: 0.8;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 0 var(--color-carrot-dark),
+      0 12px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  .btn-primary:active {
+    transform: translateY(4px);
+    border-bottom-width: 2px;
+    box-shadow: 
+      0 2px 0 var(--color-carrot-dark),
+      0 4px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  /* 🌾 Gold Button */
+  .btn-gold {
+    @apply btn;
+    background: linear-gradient(180deg, var(--color-wheat-light) 0%, var(--color-wheat) 100%);
+    color: var(--text-primary);
+    border: 4px solid var(--color-wheat-dark);
+    border-bottom-width: 6px;
+    box-shadow: 
+      0 6px 0 var(--color-wheat-dark),
+      0 10px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-gold::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 40%;
+    background: var(--glossy-highlight);
+    border-radius: 1rem 1rem 0 0;
+    opacity: 0.8;
+  }
+
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 0 var(--color-wheat-dark),
+      0 12px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  .btn-gold:active {
+    transform: translateY(4px);
+    border-bottom-width: 2px;
+    box-shadow: 
+      0 2px 0 var(--color-wheat-dark),
+      0 4px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  /* 🌱 Success Green Button */
+  .btn-success {
+    @apply btn text-white;
+    background: linear-gradient(180deg, var(--color-grass-light) 0%, var(--color-grass) 100%);
+    border: 4px solid var(--color-grass-dark);
+    border-bottom-width: 6px;
+    box-shadow: 
+      0 6px 0 var(--color-grass-dark),
+      0 10px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-success::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 40%;
+    background: var(--glossy-highlight);
+    border-radius: 1rem 1rem 0 0;
+    opacity: 0.8;
+  }
+
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 0 var(--color-grass-dark),
+      0 12px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  .btn-success:active {
+    transform: translateY(4px);
+    border-bottom-width: 2px;
+    box-shadow: 
+      0 2px 0 var(--color-grass-dark),
+      0 4px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  /* 🍓 Danger Red Button */
+  .btn-danger {
+    @apply btn text-white;
+    background: linear-gradient(180deg, var(--color-berry-light) 0%, var(--color-berry) 100%);
+    border: 4px solid var(--color-berry-dark);
+    border-bottom-width: 6px;
+    box-shadow: 
+      0 6px 0 var(--color-berry-dark),
+      0 10px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-danger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 40%;
+    background: var(--glossy-highlight);
+    border-radius: 1rem 1rem 0 0;
+    opacity: 0.8;
+  }
+
+  .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 0 var(--color-berry-dark),
+      0 12px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  .btn-danger:active {
+    transform: translateY(4px);
+    border-bottom-width: 2px;
+    box-shadow: 
+      0 2px 0 var(--color-berry-dark),
+      0 4px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  /* 🤍 Secondary White Button */
+  .btn-secondary {
+    @apply btn;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+    color: var(--text-primary);
+    border: 4px solid var(--border-light);
+    border-bottom-width: 6px;
+    box-shadow: 
+      0 6px 0 var(--border-wood),
+      0 10px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 40%;
+    background: var(--glossy-highlight);
+    border-radius: 1rem 1rem 0 0;
+    opacity: 0.6;
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 0 var(--border-wood),
+      0 12px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .btn-secondary:active {
+    transform: translateY(4px);
+    border-bottom-width: 2px;
+    box-shadow: 
+      0 2px 0 var(--border-wood),
+      0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Ghost Button */
   .btn-ghost {
-    @apply btn hover:bg-dark-800 text-dark-300 hover:text-white;
+    @apply btn;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 3px solid transparent;
+    border-bottom-width: 3px;
+    box-shadow: none;
+    text-shadow: none;
   }
 
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+  }
+
+  /* ============================================
+     🎴 CARDS & PANELS - Wood & White Style
+     ============================================ */
+
+  /* White Card */
   .card {
-    @apply bg-dark-900/50 backdrop-blur-sm border border-dark-800 rounded-xl p-6;
+    background: var(--bg-card);
+    border: 4px solid var(--border-wood);
+    border-radius: 1.5rem;
+    @apply p-6;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-deep);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 100%);
+    pointer-events: none;
   }
 
   .card-hover {
-    @apply card hover:border-dark-600 hover:bg-dark-800/50 transition-all duration-200;
+    @apply card transition-all duration-300;
   }
 
+  .card-hover:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Wood Panel */
+  .panel-wood {
+    background: linear-gradient(180deg, #a67c52 0%, #8b6f47 100%);
+    border: 5px solid var(--border-wood);
+    border-radius: 2rem;
+    @apply p-6;
+    position: relative;
+    box-shadow: 
+      inset 0 2px 4px rgba(255, 255, 255, 0.2),
+      0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .panel-wood::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 4px
+      );
+    border-radius: 1.5rem;
+    pointer-events: none;
+  }
+
+  /* Game Panel - Fancy border */
+  .game-panel {
+    background: var(--bg-card);
+    border: 4px solid var(--border-wood);
+    border-radius: 2rem;
+    position: relative;
+    @apply p-6;
+    box-shadow: var(--shadow-deep);
+  }
+
+  .game-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+    border-radius: 1.75rem 1.75rem 0 0;
+    pointer-events: none;
+  }
+
+  /* ============================================
+     📊 STAT CARDS - HUD Resource Display
+     ============================================ */
+
+  .stat-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+    border: 4px solid var(--border-wood);
+    border-radius: 1.5rem;
+    @apply p-4;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+      0 6px 0 var(--border-wood),
+      0 10px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .stat-card-gold {
+    background: linear-gradient(180deg, var(--color-wheat-light) 0%, var(--color-wheat) 100%);
+    border-color: var(--color-wheat-dark);
+    box-shadow: 
+      0 6px 0 var(--color-wheat-dark),
+      0 10px 15px rgba(0, 0, 0, 0.25);
+  }
+
+  .stat-card-green {
+    background: linear-gradient(180deg, var(--color-grass-light) 0%, var(--color-grass) 100%);
+    border-color: var(--color-grass-dark);
+    box-shadow: 
+      0 6px 0 var(--color-grass-dark),
+      0 10px 15px rgba(0, 0, 0, 0.25);
+  }
+
+  .stat-card-red {
+    background: linear-gradient(180deg, var(--color-berry-light) 0%, var(--color-berry) 100%);
+    border-color: var(--color-berry-dark);
+    box-shadow: 
+      0 6px 0 var(--color-berry-dark),
+      0 10px 15px rgba(0, 0, 0, 0.25);
+  }
+
+  .stat-card-blue {
+    background: linear-gradient(180deg, var(--color-sky-light) 0%, var(--color-sky) 100%);
+    border-color: var(--color-sky-dark);
+    box-shadow: 
+      0 6px 0 var(--color-sky-dark),
+      0 10px 15px rgba(0, 0, 0, 0.25);
+  }
+
+  /* ============================================
+     🎚️ INPUTS & TOGGLES - Cute Style
+     ============================================ */
+
   .input {
-    @apply w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+    @apply w-full px-5 py-3;
+    background: #ffffff;
+    border: 4px solid var(--border-light);
+    border-radius: 1rem;
+    color: var(--text-primary);
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--color-carrot);
+    box-shadow: 
+      inset 0 2px 4px rgba(0, 0, 0, 0.1),
+      0 0 0 4px rgba(249, 115, 22, 0.2);
   }
 
   .label {
-    @apply block text-sm font-medium text-dark-300 mb-2;
+    @apply block text-sm font-bold mb-2;
+    color: var(--text-primary);
+    font-family: 'Baloo 2', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
+  /* Toggle Switch - Chunky Style */
+  .toggle {
+    @apply relative w-16 h-9 rounded-full cursor-pointer transition-all duration-300;
+    background: #d0d0d0;
+    border: 3px solid var(--border-light);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .toggle.active {
+    background: linear-gradient(90deg, var(--color-grass) 0%, var(--color-grass-light) 100%);
+    border-color: var(--color-grass-dark);
+    box-shadow: 
+      inset 0 2px 4px rgba(0, 0, 0, 0.1),
+      0 0 0 3px rgba(34, 197, 94, 0.3);
+  }
+
+  .toggle-knob {
+    @apply absolute top-0.5 w-7 h-7 rounded-full transition-all duration-300;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+    left: 4px;
+    border: 2px solid var(--border-light);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .toggle.active .toggle-knob {
+    left: calc(100% - 32px);
+    background: linear-gradient(180deg, #ffffff 0%, #fef3c7 100%);
+    border-color: var(--color-wheat);
+  }
+
+  /* ============================================
+     🎯 UTILITY CLASSES
+     ============================================ */
+
+  /* Gradient Text */
   .gradient-text {
-    @apply bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 bg-clip-text text-transparent;
+    background: linear-gradient(135deg, var(--color-carrot), var(--color-wheat));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .gradient-border {
-    @apply relative before:absolute before:inset-0 before:rounded-xl before:p-[1px] before:bg-gradient-to-r before:from-primary-500 before:via-primary-600 before:to-primary-700 before:-z-10;
+  .gradient-text-gold {
+    background: linear-gradient(135deg, var(--color-wheat-light), var(--color-wheat-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* Game-specific components */
-  .game-stat-card {
-    @apply bg-dark-900/80 backdrop-blur-sm border border-dark-700 rounded-xl p-4 hover:border-dark-600 transition-all;
+  /* Floating Icon Badge */
+  .icon-badge {
+    @apply w-12 h-12 rounded-full flex items-center justify-center;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+    border: 3px solid var(--border-wood);
+    box-shadow: 
+      0 4px 0 var(--border-wood),
+      0 8px 12px rgba(0, 0, 0, 0.25);
   }
 
-  .stat-icon {
-    @apply p-3 rounded-xl;
+  .icon-badge-gold {
+    background: linear-gradient(180deg, var(--color-wheat-light) 0%, var(--color-wheat) 100%);
+    border-color: var(--color-wheat-dark);
+    box-shadow: 
+      0 4px 0 var(--color-wheat-dark),
+      0 8px 12px rgba(0, 0, 0, 0.3);
   }
 
-  .game-action-card {
-    @apply flex items-center gap-4 p-5 bg-dark-900/80 backdrop-blur-sm border border-dark-700 rounded-xl hover:border-primary-600/50 hover:bg-dark-800/80 transition-all;
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold;
+    background: var(--bg-card);
+    border: 2px solid var(--border-wood);
+    box-shadow: var(--shadow-soft);
+    font-family: 'Baloo 2', sans-serif;
   }
 
-  .plot-card {
-    @apply relative p-4 rounded-xl border-2 transition-all cursor-pointer;
+  .badge-gold {
+    background: linear-gradient(180deg, var(--color-wheat-light), var(--color-wheat));
+    color: var(--text-primary);
+    border-color: var(--color-wheat-dark);
   }
 
-  .plot-card-empty {
-    @apply border-dashed border-dark-600 hover:border-dark-500 bg-dark-800/30;
+  .badge-red {
+    background: linear-gradient(180deg, var(--color-berry-light), var(--color-berry));
+    color: white;
+    border-color: var(--color-berry-dark);
   }
 
-  .plot-card-active {
-    @apply border-primary-600/50 bg-primary-900/20 hover:border-primary-500;
+  .badge-green {
+    background: linear-gradient(180deg, var(--color-grass-light), var(--color-grass));
+    color: white;
+    border-color: var(--color-grass-dark);
   }
 
-  .plot-card-locked {
-    @apply border-danger-600/50 bg-danger-900/20 cursor-not-allowed;
+  /* Progress Bar - Capsule Style */
+  .progress-bar {
+    @apply w-full h-8 rounded-full overflow-hidden;
+    background: #d0d0d0;
+    border: 3px solid var(--border-wood);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
-  .plot-card-selected {
-    @apply border-primary-400 bg-primary-600/30 ring-2 ring-primary-400/50;
+  .progress-fill {
+    @apply h-full transition-all duration-500 flex items-center justify-center;
+    background: linear-gradient(180deg, var(--color-grass-light), var(--color-grass));
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    position: relative;
   }
 
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0);
+  .progress-fill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+  }
+
+  .progress-fill-gold {
+    background: linear-gradient(180deg, var(--color-wheat-light), var(--color-wheat));
   }
 }
 
+/* ============================================
+   🎨 UTILITY ANIMATIONS
+   ============================================ */
+
 @layer utilities {
-  .animate-glow {
-    animation: glow 2s ease-in-out infinite alternate;
+  /* Bounce on Hover */
+  .hover-bounce {
+    transition: transform 0.2s ease-out;
   }
 
-  .animate-pulse-slow {
-    animation: pulse-slow 3s ease-in-out infinite;
+  .hover-bounce:hover {
+    animation: bounce 0.6s ease-out;
   }
 
-  @keyframes glow {
-    from {
-      box-shadow: 0 0 20px -10px rgba(34, 197, 94, 0.5);
-    }
-    to {
-      box-shadow: 0 0 30px -10px rgba(34, 197, 94, 0.8);
-    }
+  /* Wiggle Animation */
+  .hover-wiggle:hover {
+    animation: wiggle 0.5s ease-in-out;
   }
 
-  @keyframes pulse-slow {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
+  /* Float Animation */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
   }
 
-  .glass {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  /* Pop In */
+  .animate-pop {
+    animation: pop 0.3s ease-out;
+  }
+
+  /* Text Shadow - Game Style */
+  .text-shadow-game {
+    text-shadow: 
+      2px 2px 0 var(--text-shadow),
+      -1px -1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .text-shadow-strong {
+    text-shadow: 
+      3px 3px 0 var(--text-shadow),
+      -1px -1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  /* Drop Shadow - For icons/images */
+  .drop-shadow-game {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  }
+
+  /* Glossy Overlay */
+  .glossy-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--glossy-shine);
+    pointer-events: none;
   }
 }

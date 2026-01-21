@@ -115,6 +115,7 @@ interface GameDataStore {
   
   // Reset
   reset: () => void
+  resetPlayer: () => void
 }
 
 const PLOTS_PER_FARM = 5
@@ -482,6 +483,11 @@ export const useGameDataStore = create<GameDataStore>()(
           gameStartTime: Date.now(),
           lastTickTime: Date.now(),
         })
+      },
+
+      resetPlayer: () => {
+        // Alias for reset - resets all player data
+        get().reset()
       },
     }),
     {

@@ -24,7 +24,11 @@ interface WalletOption {
   subOptions?: DetectedWallet[];
 }
 
-export default function WalletConnect() {
+interface WalletConnectProps {
+  compact?: boolean;
+}
+
+export default function WalletConnect({ compact = false }: WalletConnectProps) {
   const {
     connected,
     owner,
@@ -121,13 +125,24 @@ export default function WalletConnect() {
 
   return (
     <>
-      <button
-        onClick={() => setShowModal(true)}
-        className="btn-primary flex items-center gap-2"
-      >
-        <WalletIcon className="w-5 h-5" />
-        Connect Wallet
-      </button>
+      {compact ? (
+        <motion.button
+          onClick={() => setShowModal(true)}
+          className="w-full flex flex-col items-center py-2 px-1 rounded-xl bg-yellow-500/20 hover:bg-yellow-500/30 transition-all"
+          whileTap={{ scale: 0.92 }}
+        >
+          <WalletIcon className="w-6 h-6 text-yellow-400" />
+          <span className="text-[10px] mt-1 font-bold text-yellow-400">Connect</span>
+        </motion.button>
+      ) : (
+        <button
+          onClick={() => setShowModal(true)}
+          className="btn-primary flex items-center gap-2"
+        >
+          <WalletIcon className="w-5 h-5" />
+          Connect Wallet
+        </button>
+      )}
 
       {/* Wallet Selection Modal */}
       <AnimatePresence>
