@@ -1,0 +1,11 @@
+D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\deps\pest_generator-d621a9640502e126.d: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\lib.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\macros.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\docs.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\generator.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\parse_derive.rs
+
+D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\deps\libpest_generator-d621a9640502e126.rlib: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\lib.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\macros.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\docs.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\generator.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\parse_derive.rs
+
+D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\deps\libpest_generator-d621a9640502e126.rmeta: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\lib.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\macros.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\docs.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\generator.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\parse_derive.rs
+
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\lib.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\macros.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\docs.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\generator.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\pest_generator-2.8.5\src\parse_derive.rs:

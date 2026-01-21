@@ -1,9 +1,9 @@
-D:\Projects\Blockchain\stake-and-steal\smart_contract\target\release\build\crossbeam-utils-b2b7aad4b59ce7e1\build_script_build-b2b7aad4b59ce7e1.d: C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build.rs C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\no_atomic.rs C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build-common.rs
+D:\RedZero\Web\stake-and-steal\smart_contract\target\release\build\crossbeam-utils-b2b7aad4b59ce7e1\build_script_build-b2b7aad4b59ce7e1.d: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\no_atomic.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build-common.rs
 
-D:\Projects\Blockchain\stake-and-steal\smart_contract\target\release\build\crossbeam-utils-b2b7aad4b59ce7e1\build_script_build-b2b7aad4b59ce7e1.exe: C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build.rs C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\no_atomic.rs C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build-common.rs
+D:\RedZero\Web\stake-and-steal\smart_contract\target\release\build\crossbeam-utils-b2b7aad4b59ce7e1\build_script_build-b2b7aad4b59ce7e1.exe: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\no_atomic.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build-common.rs
 
-C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build.rs:
-C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\no_atomic.rs:
-C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build-common.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\no_atomic.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crossbeam-utils-0.8.21\build-common.rs:
 
 # env-dep:CARGO_PKG_NAME=crossbeam-utils

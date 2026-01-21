@@ -1,0 +1,20 @@
+Writing generated file: D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\settings.rs
+Writing generated file: D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\types.rs
+Writing generated file: D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\opcodes.rs
+Writing generated file: D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\clif_opt.isle
+Writing generated file: D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\clif_lower.isle
+Writing generated file: D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\inst_builder.rs
+Writing generated file: D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\settings-x86.rs
+Writing generated file: D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\settings-arm64.rs
+Writing generated file: D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\settings-riscv64.rs
+Rebuilding D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\isle_opt.rs
+Writing ISLE-generated Rust code to D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\isle_opt.rs
+Rebuilding D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\isle_x64.rs
+Writing ISLE-generated Rust code to D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\isle_x64.rs
+Rebuilding D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\isle_aarch64.rs
+Writing ISLE-generated Rust code to D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\isle_aarch64.rs
+Rebuilding D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\isle_s390x.rs
+Writing ISLE-generated Rust code to D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\isle_s390x.rs
+Rebuilding D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\isle_riscv64.rs
+Writing ISLE-generated Rust code to D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\cranelift-codegen-f383f99cf9f77793\out\isle_riscv64.rs
+fatal: not a git repository (or any of the parent directories): .git

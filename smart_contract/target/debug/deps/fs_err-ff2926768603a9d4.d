@@ -1,0 +1,12 @@
+D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\deps\fs_err-ff2926768603a9d4.d: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\lib.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\dir.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\errors.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\file.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\open_options.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\os.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\os\windows.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\path.rs
+
+D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\deps\libfs_err-ff2926768603a9d4.rmeta: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\lib.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\dir.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\errors.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\file.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\open_options.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\os.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\os\windows.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\path.rs
+
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\lib.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\dir.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\errors.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\file.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\open_options.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\os.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\os\windows.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fs-err-2.11.0\src\path.rs:

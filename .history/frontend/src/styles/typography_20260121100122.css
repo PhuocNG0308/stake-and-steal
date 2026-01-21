@@ -1,0 +1,85 @@
+
+@layer utilities {
+  .text-stroke-sm {
+    text-shadow: 
+      -1px -1px 0 var(--tw-shadow-color, #000),
+       1px -1px 0 var(--tw-shadow-color, #000),
+      -1px  1px 0 var(--tw-shadow-color, #000),
+       1px  1px 0 var(--tw-shadow-color, #000);
+  }
+
+  .text-stroke {
+    text-shadow: 
+      -2px -2px 0 var(--tw-shadow-color, #000),
+       2px -2px 0 var(--tw-shadow-color, #000),
+      -2px  2px 0 var(--tw-shadow-color, #000),
+       2px  2px 0 var(--tw-shadow-color, #000);
+  }
+
+  .text-stroke-lg {
+    text-shadow: 
+      -3px -3px 0 var(--tw-shadow-color, #000),
+       3px -3px 0 var(--tw-shadow-color, #000),
+      -3px  3px 0 var(--tw-shadow-color, #000),
+       3px  3px 0 var(--tw-shadow-color, #000);
+  }
+  
+  /* Specific themed strokes - Dark outline for light/white text */
+  .text-outline-dark {
+    text-shadow: 
+      -2px -2px 0 #1e293b,
+       2px -2px 0 #1e293b,
+      -2px  2px 0 #1e293b,
+       2px  2px 0 #1e293b,
+       0 3px 6px rgba(0,0,0,0.4);
+  }
+
+  .text-outline-royal {
+    text-shadow: 
+      -2px -2px 0 #0f172a,
+       2px -2px 0 #0f172a,
+      -2px  2px 0 #0f172a,
+       2px  2px 0 #0f172a,
+       0 4px 4px rgba(0,0,0,0.3);
+  }
+
+  /* Gold outline for dark backgrounds */
+  .text-outline-gold {
+    text-shadow: 
+      -2px -2px 0 #92400e,
+       2px -2px 0 #92400e,
+      -2px  2px 0 #92400e,
+       2px  2px 0 #92400e,
+       0 3px 6px rgba(0,0,0,0.3);
+  }
+
+  /* For cards with cream/white backgrounds - use dark text with light outline */
+  .text-outline-cream {
+    text-shadow: 
+      -1px -1px 0 #fef3c7,
+       1px -1px 0 #fef3c7,
+      -1px  1px 0 #fef3c7,
+       1px  1px 0 #fef3c7,
+       0 2px 4px rgba(0,0,0,0.15);
+  }
+
+  /* Green badge text */
+  .text-outline-green {
+    text-shadow: 
+      -2px -2px 0 #14532d,
+       2px -2px 0 #14532d,
+      -2px  2px 0 #14532d,
+       2px  2px 0 #14532d,
+       0 3px 6px rgba(0,0,0,0.3);
+  }
+
+  /* Brown/oak outline for oak panels */
+  .text-outline-oak {
+    text-shadow: 
+      -2px -2px 0 #422006,
+       2px -2px 0 #422006,
+      -2px  2px 0 #422006,
+       2px  2px 0 #422006,
+       0 3px 6px rgba(0,0,0,0.35);
+  }
+}

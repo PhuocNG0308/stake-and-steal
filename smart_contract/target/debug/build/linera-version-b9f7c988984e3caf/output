@@ -1,0 +1,2 @@
+cargo:rustc-cfg=linera_version_building
+cargo:rustc-env=LINERA_VERSION_STATIC_PATH=D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\build\linera-version-b9f7c988984e3caf\out\static.rs

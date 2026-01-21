@@ -1,0 +1,37 @@
+
+@layer utilities {
+  .text-stroke-sm {
+    text-shadow: 
+      -1px -1px 0 var(--tw-shadow-color, #000),
+       1px -1px 0 var(--tw-shadow-color, #000),
+      -1px  1px 0 var(--tw-shadow-color, #000),
+       1px  1px 0 var(--tw-shadow-color, #000);
+  }
+
+  .text-stroke {
+    text-shadow: 
+      -2px -2px 0 var(--tw-shadow-color, #000),
+       2px -2px 0 var(--tw-shadow-color, #000),
+      -2px  2px 0 var(--tw-shadow-color, #000),
+       2px  2px 0 var(--tw-shadow-color, #000);
+  }
+
+  .text-stroke-lg {
+    text-shadow: 
+      -3px -3px 0 var(--tw-shadow-color, #000),
+       3px -3px 0 var(--tw-shadow-color, #000),
+      -3px  3px 0 var(--tw-shadow-color, #000),
+       3px  3px 0 var(--tw-shadow-color, #000);
+  }
+  
+  /* Specific themed strokes */
+  .text-outline-royal {
+    --tw-shadow-color: #0f172a; /* Slate 900 */
+    text-shadow: 
+      -2px -2px 0 var(--tw-shadow-color),
+       2px -2px 0 var(--tw-shadow-color),
+      -2px  2px 0 var(--tw-shadow-color),
+       2px  2px 0 var(--tw-shadow-color),
+       0 4px 4px rgba(0,0,0,0.3);
+  }
+}

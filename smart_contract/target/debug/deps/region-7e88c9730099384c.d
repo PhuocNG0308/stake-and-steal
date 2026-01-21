@@ -1,0 +1,14 @@
+D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\deps\region-7e88c9730099384c.d: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\lib.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\alloc.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\error.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\lock.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\os\mod.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\os\windows.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\page.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\protect.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\query.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\util.rs
+
+D:\RedZero\Web\stake-and-steal\smart_contract\target\debug\deps\libregion-7e88c9730099384c.rmeta: C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\lib.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\alloc.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\error.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\lock.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\os\mod.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\os\windows.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\page.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\protect.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\query.rs C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\util.rs
+
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\lib.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\alloc.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\error.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\lock.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\os\mod.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\os\windows.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\page.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\protect.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\query.rs:
+C:\Users\NC\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\region-3.0.2\src\util.rs:

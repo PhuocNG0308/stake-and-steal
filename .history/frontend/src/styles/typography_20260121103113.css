@@ -1,0 +1,122 @@
+
+@layer utilities {
+  /* Smooth text stroke using 8-direction shadow for rounded appearance */
+  .text-stroke-sm {
+    text-shadow: 
+      -1px -1px 0 var(--tw-shadow-color, #000),
+       1px -1px 0 var(--tw-shadow-color, #000),
+      -1px  1px 0 var(--tw-shadow-color, #000),
+       1px  1px 0 var(--tw-shadow-color, #000),
+       0   -1px 0 var(--tw-shadow-color, #000),
+       0    1px 0 var(--tw-shadow-color, #000),
+      -1px  0   0 var(--tw-shadow-color, #000),
+       1px  0   0 var(--tw-shadow-color, #000);
+  }
+
+  .text-stroke {
+    text-shadow: 
+      -2px -2px 0 var(--tw-shadow-color, #000),
+       2px -2px 0 var(--tw-shadow-color, #000),
+      -2px  2px 0 var(--tw-shadow-color, #000),
+       2px  2px 0 var(--tw-shadow-color, #000),
+       0   -2px 0 var(--tw-shadow-color, #000),
+       0    2px 0 var(--tw-shadow-color, #000),
+      -2px  0   0 var(--tw-shadow-color, #000),
+       2px  0   0 var(--tw-shadow-color, #000);
+  }
+
+  .text-stroke-lg {
+    text-shadow: 
+      -3px -3px 0 var(--tw-shadow-color, #000),
+       3px -3px 0 var(--tw-shadow-color, #000),
+      -3px  3px 0 var(--tw-shadow-color, #000),
+       3px  3px 0 var(--tw-shadow-color, #000),
+       0   -3px 0 var(--tw-shadow-color, #000),
+       0    3px 0 var(--tw-shadow-color, #000),
+      -3px  0   0 var(--tw-shadow-color, #000),
+       3px  0   0 var(--tw-shadow-color, #000);
+  }
+  
+  /* Specific themed strokes - Dark outline for light/white text */
+  /* Using 8-direction shadows for smooth, non-cut outline */
+  .text-outline-dark {
+    text-shadow: 
+      -1px -1px 0 #1e293b,
+       1px -1px 0 #1e293b,
+      -1px  1px 0 #1e293b,
+       1px  1px 0 #1e293b,
+       0   -1px 0 #1e293b,
+       0    1px 0 #1e293b,
+      -1px  0   0 #1e293b,
+       1px  0   0 #1e293b,
+       0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .text-outline-royal {
+    text-shadow: 
+      -1px -1px 0 #0f172a,
+       1px -1px 0 #0f172a,
+      -1px  1px 0 #0f172a,
+       1px  1px 0 #0f172a,
+       0   -1px 0 #0f172a,
+       0    1px 0 #0f172a,
+      -1px  0   0 #0f172a,
+       1px  0   0 #0f172a,
+       0 2px 4px rgba(0,0,0,0.25);
+  }
+
+  /* Gold outline for dark backgrounds */
+  .text-outline-gold {
+    text-shadow: 
+      -1px -1px 0 #92400e,
+       1px -1px 0 #92400e,
+      -1px  1px 0 #92400e,
+       1px  1px 0 #92400e,
+       0   -1px 0 #92400e,
+       0    1px 0 #92400e,
+      -1px  0   0 #92400e,
+       1px  0   0 #92400e,
+       0 2px 4px rgba(0,0,0,0.25);
+  }
+
+  /* For cards with cream/white backgrounds - use dark text with light outline */
+  .text-outline-cream {
+    text-shadow: 
+      -1px -1px 0 #fef3c7,
+       1px -1px 0 #fef3c7,
+      -1px  1px 0 #fef3c7,
+       1px  1px 0 #fef3c7,
+       0   -1px 0 #fef3c7,
+       0    1px 0 #fef3c7,
+      -1px  0   0 #fef3c7,
+       1px  0   0 #fef3c7;
+  }
+
+  /* Green badge text */
+  .text-outline-green {
+    text-shadow: 
+      -1px -1px 0 #14532d,
+       1px -1px 0 #14532d,
+      -1px  1px 0 #14532d,
+       1px  1px 0 #14532d,
+       0   -1px 0 #14532d,
+       0    1px 0 #14532d,
+      -1px  0   0 #14532d,
+       1px  0   0 #14532d,
+       0 2px 4px rgba(0,0,0,0.25);
+  }
+
+  /* Brown/oak outline for oak panels */
+  .text-outline-oak {
+    text-shadow: 
+      -1px -1px 0 #422006,
+       1px -1px 0 #422006,
+      -1px  1px 0 #422006,
+       1px  1px 0 #422006,
+       0   -1px 0 #422006,
+       0    1px 0 #422006,
+      -1px  0   0 #422006,
+       1px  0   0 #422006,
+       0 2px 4px rgba(0,0,0,0.3);
+  }
+}
