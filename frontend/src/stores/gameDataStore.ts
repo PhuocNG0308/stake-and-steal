@@ -17,7 +17,7 @@ import { persist } from 'zustand/middleware'
 // CONSTANTS
 // ============================================================================
 
-export const BASE_PLOTS_COUNT = 5
+export const BASE_PLOTS_COUNT = 7
 export const MAX_PLOTS_PER_PLAYER = 15
 export const SAS_REWARD_RATE_BPS = 5 // 0.05% per block in SAS
 export const PLOT_COST_SAS = 500
@@ -33,6 +33,7 @@ export interface HiddenPlot {
   balance: number     // USDT balance (hidden from others)
   pendingSasRewards: number // Pending SAS rewards
   depositTime: number // When tokens were deposited
+  lastSasClaimTime: number // When SAS was last claimed from this plot
   isPurchased: boolean // Extra plots need to be purchased
 }
 
@@ -191,6 +192,7 @@ const createEmptyFarm = (totalPlots: number = BASE_PLOTS_COUNT): PlayerFarm => (
     balance: 0,
     pendingSasRewards: 0,
     depositTime: 0,
+    lastSasClaimTime: 0,
     isPurchased: i < BASE_PLOTS_COUNT, // First 5 are free
   })),
   totalStaked: 0,
@@ -263,6 +265,7 @@ export const useGameDataStore = create<GameDataStore>()(
           hasTokens: true,
           balance: newPlots[plotId].balance + amount,
           depositTime: Date.now(),
+          lastSasClaimTime: Date.now(),
         }
 
         const totalStaked = newPlots.reduce((sum, p) => sum + p.balance, 0)
@@ -360,10 +363,19 @@ export const useGameDataStore = create<GameDataStore>()(
         }
 
         const sasAmount = playerFarm.pendingSasRewards
+        const now = Date.now()
+
+        // Update lastSasClaimTime for all active plots
+        const newPlots = playerFarm.plots.map((plot) => ({
+          ...plot,
+          // Only update if it has tokens, otherwise keep as is
+          lastSasClaimTime: plot.hasTokens ? now : plot.lastSasClaimTime,
+        }))
 
         set({
           playerFarm: {
             ...playerFarm,
+            plots: newPlots,
             pendingSasRewards: 0,
           },
           sasBalance: sasBalance + sasAmount,
@@ -703,10 +715,14 @@ export const useGameDataStore = create<GameDataStore>()(
         // Calculate SAS rewards for each plot
         for (const plot of playerFarm.plots) {
           if (plot.hasTokens && plot.balance > 0 && plot.depositTime > 0) {
-            const secondsElapsed = (now - plot.depositTime) / 1000
-            const daysElapsed = secondsElapsed / settings.dayDurationSeconds
-            const dailyRate = settings.sasApyPercent / 365 / 100
-            totalSas += plot.balance * dailyRate * daysElapsed
+            const startTime = Math.max(plot.depositTime, plot.lastSasClaimTime || 0)
+            const secondsElapsed = (now - startTime) / 1000
+            
+            if (secondsElapsed > 0) {
+              const daysElapsed = secondsElapsed / settings.dayDurationSeconds
+              const dailyRate = settings.sasApyPercent / 365 / 100
+              totalSas += plot.balance * dailyRate * daysElapsed
+            }
           }
         }
         

@@ -154,19 +154,9 @@ export default function GameLayout() {
               </div>
 
               {/* Wallet Integration */}
-              {connected ? (
-                <motion.button
-                  onClick={() => openModal('wallet')}
-                  className="p-2 rounded-xl bg-green-500/20 hover:bg-green-500/30 transition-all border border-green-500/30"
-                  whileTap={showAnimations ? buttonTap : {}}
-                >
-                  <WalletIcon className="w-5 h-5 text-green-400" />
-                </motion.button>
-              ) : (
-                <div className="scale-90 origin-right">
-                   <WalletConnect />
-                </div>
-              )}
+              <div className="scale-90 origin-right">
+                <WalletConnect />
+              </div>
               
               {connected && <FaucetButton />}
             </div>

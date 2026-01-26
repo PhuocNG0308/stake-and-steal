@@ -274,12 +274,12 @@ export default function Raid() {
                         </div>
                       </div>
 
-                      {/* Hidden Plots Preview (Show only that there ARE 5 plots, not which has tokens) */}
-                      <div className="grid grid-cols-5 gap-2 mb-3">
-                        {Array.from({ length: PLOTS_COUNT }).map((_, idx) => (
+                      {/* Hidden Plots Preview (Show only that there ARE plots, not which has tokens) */}
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {(victim.plotConfig ? victim.plotConfig : Array.from({ length: 5 })).map((_, idx) => (
                           <div
                             key={idx}
-                            className="aspect-square bg-slate-700/50 rounded-lg flex items-center justify-center border border-slate-600/50"
+                            className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center border border-slate-600/50"
                           >
                             <QuestionMarkCircleIcon className="w-6 h-6 text-slate-500" />
                           </div>
@@ -391,12 +391,12 @@ export default function Raid() {
                 One or more plots have tokens hidden. Pick correctly to steal!
               </p>
               
-              <div className="grid grid-cols-5 gap-3">
-                {Array.from({ length: PLOTS_COUNT }).map((_, idx) => (
+              <div className="flex flex-wrap justify-center gap-3">
+                {(selectedVictim.plotConfig ? selectedVictim.plotConfig : Array.from({ length: 5 })).map((_, idx) => (
                   <motion.button
                     key={idx}
                     onClick={() => handleSelectPlot(idx)}
-                    className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center transition-all ${
+                    className={`w-24 h-24 rounded-xl border-2 flex flex-col items-center justify-center transition-all ${
                       selectedPlot === idx
                         ? 'border-red-500 bg-red-500/20 scale-105'
                         : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'

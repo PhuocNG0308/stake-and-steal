@@ -8,9 +8,11 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useWallet } from '@/hooks/useWallet';
+import { useGameDataStore } from '@/stores/gameDataStore';
 
 export default function FaucetButton() {
   const { connected, walletType, faucetAvailable, requestFaucet } = useWallet();
+  const { addSasBalance } = useGameDataStore();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -21,6 +23,24 @@ export default function FaucetButton() {
     setResult(null);
     
     try {
+      // Special handling for Demo Wallet - Give SAS instead of USDT
+      if (walletType === 'demo') {
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        addSasBalance(250);
+        
+        setResult({
+          success: true,
+          message: 'Received 250 SAS Tokens',
+        });
+        
+        // Clear result after 5 seconds
+        setTimeout(() => setResult(null), 5000);
+        setLoading(false);
+        return;
+      }
+
       const response = await requestFaucet();
       setResult(response);
       
@@ -52,7 +72,7 @@ export default function FaucetButton() {
         disabled={isDisabled}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
           isDisabled
-            ? 'bg-dark-700 text-dark-400 cursor-not-allowed'
+            ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
             : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-500 hover:to-green-600'
         }`}
       >

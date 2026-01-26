@@ -1,15 +1,18 @@
-/**
- * Dashboard - Royal Match Farm Style
- */
-
-import { useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import {
   PlayIcon,
-  WalletIcon,
+  QuestionMarkCircleIcon,
+  ShieldCheckIcon,
+  BoltIcon,
+  ChartBarIcon,
+  CurrencyDollarIcon,
+  SparklesIcon,
+  CubeIcon,
+  BeakerIcon
 } from '@heroicons/react/24/outline'
-import { useWalletStore } from '../stores'
+import { useWalletStore, useUIStore } from '../stores'
 import { useGameData } from '../stores/gameDataStore'
 import { useTestSettings } from '../hooks/useTestSettings'
 import { useSettingsStore } from '../stores/settingsStore'
@@ -21,7 +24,6 @@ export default function Dashboard() {
     playerFarm,
     usdtBalance,
     sasBalance, 
-    stats, 
     inventory,
     isInitialized,
     winRate,
@@ -31,20 +33,18 @@ export default function Dashboard() {
   } = useGameData()
   const { settings } = useTestSettings()
   const { showAnimations } = useSettingsStore()
+  const { openModal } = useUIStore()
 
-  const springTransition = { type: "spring", stiffness: 300, damping: 20 }
+  const [showSasInfo, setShowSasInfo] = useState(false)
 
-  // Initialize player if connected but not initialized
   useEffect(() => {
     if (connected && !isInitialized) {
       initializePlayer(10000, 0)
     }
   }, [connected, isInitialized, initializePlayer])
 
-  // Yield ticking
   useEffect(() => {
     if (!playerFarm || playerFarm.totalStaked === 0) return
-
     const interval = setInterval(() => {
       tickYield({
         apyPercent: settings.apyPercent,
@@ -52,85 +52,36 @@ export default function Dashboard() {
         dayDurationSeconds: settings.dayDurationSeconds,
       })
     }, 1000)
-
     return () => clearInterval(interval)
   }, [playerFarm?.totalStaked, settings.apyPercent, settings.dayDurationSeconds, tickYield])
 
-  // Not connected state
   if (!connected) {
     return (
       <motion.div
-        initial={showAnimations ? { opacity: 0, scale: 0.95 } : {}}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={springTransition}
         className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4"
       >
-        <motion.div
-          animate={showAnimations ? { 
-            y: [0, -20, 0],
-          } : {}}
-          transition={{ 
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="text-9xl mb-8 drop-shadow-royal"
-        >
-          🌾
-        </motion.div>
-
-        <h1 className="text-5xl font-black mb-4 text-white text-outline-royal">
-          <span className="text-yellow-400 text-outline-royal">Welcome Farmer!</span>
-        </h1>
-        <p className="text-white text-outline-royal max-w-md mb-12 text-xl font-bold">
-          Connect your wallet to start your Royal Farm adventure! 🚜
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-6xl mb-12">
-          {[
-            { title: 'Stake', desc: 'Grow royal crops for rewards', emoji: '🌱' },
-            { title: 'Steal', desc: 'Raid rival farms', emoji: '⚔️' },
-            { title: 'Defend', desc: 'Protect your harvest', emoji: '🛡️' },
-          ].map((item, i) => (
-            <motion.div
-              key={item.title}
-              initial={showAnimations ? { opacity: 0, y: 20 } : {}}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.1, ...springTransition }}
-              whileHover={showAnimations ? { scale: 1.08, y: -8 } : {}}
-              className="card-panel text-center bg-slate-800/90 backdrop-blur-sm border-4 border-slate-600 rounded-2xl p-4 sm:p-6"
-            >
-              <div className="text-5xl sm:text-6xl mb-3 sm:mb-4 drop-shadow-lg">{item.emoji}</div>
-              <h3 className="font-black text-xl sm:text-2xl mb-2 text-white text-outline-dark">{item.title}</h3>
-              <p className="text-white text-outline-dark font-bold text-sm sm:text-base">{item.desc}</p>
-            </motion.div>
-          ))}
+        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-700/20 flex items-center justify-center mb-6 border border-yellow-500/30">
+          <PlayIcon className="w-10 h-10 text-yellow-400" />
         </div>
-
-        <motion.div 
-          className="flex items-center gap-3 text-white font-black text-outline-royal"
-          animate={showAnimations ? { opacity: [0.5, 1, 0.5] } : {}}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <WalletIcon className="w-6 h-6" />
-          <span className="text-lg">CONNECT WALLET TO START</span>
-        </motion.div>
+        <h2 className="text-2xl font-bold mb-3 text-white text-outline-royal">Welcome, Ruler!</h2>
+        <p className="text-white text-outline-royal max-w-md mb-6">
+          Connect your wallet to manage your kingdom, farm yield, and defend against raiders.
+        </p>
       </motion.div>
     )
   }
 
-  // Loading state
   if (!isInitialized || !playerFarm) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
+      <div className="min-h-[50vh] flex flex-col items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-          className="text-6xl drop-shadow-lg"
-        >
-          ⏳
-        </motion.div>
-        <p className="text-white font-black text-lg text-outline-royal">Loading your royal farm...</p>
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="w-16 h-16 rounded-full border-4 border-yellow-500/30 border-t-yellow-500 mb-6"
+        />
+        <h2 className="text-xl font-bold text-white text-outline-royal">Loading Kingdom...</h2>
       </div>
     )
   }
@@ -141,242 +92,190 @@ export default function Dashboard() {
     <motion.div
       initial={showAnimations ? { opacity: 0 } : {}}
       animate={{ opacity: 1 }}
-      transition={springTransition}
-      className="space-y-6 pb-24 px-2 pt-4"
+      className="min-h-screen pb-24 px-4 pt-4"
     >
-      {/* Welcome Banner - Royal Oak Panel */}
-      <motion.div 
-        initial={showAnimations ? { scale: 0.95, opacity: 0 } : {}}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={springTransition}
-        className="panel-oak relative overflow-hidden"
-      >
-        <div className="flex items-center justify-between flex-wrap gap-4 relative z-10">
-          <div className="flex items-center gap-4">
-            <motion.div 
-              className="text-6xl drop-shadow-royal"
-              animate={showAnimations ? { rotate: [0, 10, -10, 0] } : {}}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              👑
-            </motion.div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-3xl font-black mb-1 text-white text-outline-oak truncate">
-                Royal Farm Dashboard
-              </h2>
-              <p className="text-white font-bold text-outline-oak text-sm sm:text-base">
-                {activePlots > 0 
-                  ? `${activePlots} royal plots are growing! 🌱`
-                  : 'Start farming to grow your kingdom! 👑'}
-              </p>
-            </div>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold flex items-center gap-3 text-white text-outline-royal">
+          <span className="text-3xl">👑</span>
+          <span>Royal Dashboard</span>
+        </h1>
+        <button 
+          onClick={() => openModal('tester-settings')}
+          className="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg border border-slate-600 text-slate-400 hover:text-white transition-colors"
+          title="Tester Settings"
+        >
+          <BeakerIcon className="w-5 h-5" />
+        </button>
+      </div>
+
+      {activePlots === 0 && (
+        <Link to="/farm" className="block mb-4">
+          <div className="bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/50 rounded-xl p-3 flex items-center justify-center gap-2 text-yellow-400 font-bold animate-pulse">
+            <PlayIcon className="w-5 h-5" />
+            <span>Start Farming Now</span>
           </div>
-          {activePlots === 0 && (
-            <Link to="/farm">
-              <motion.button 
-                whileHover={showAnimations ? { scale: 1.08, y: -4 } : {}}
-                whileTap={showAnimations ? { scale: 0.95, y: 2 } : {}}
-                transition={springTransition}
-                className="btn-royal text-xl px-10 py-5 animate-pulse-royal"
+        </Link>
+      )}
+
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-600 relative overflow-hidden">
+          <div className="flex items-center gap-2 mb-2">
+            <CurrencyDollarIcon className="w-5 h-5 text-yellow-400" />
+            <div className="text-xs text-white text-outline-dark">USDT Balance</div>
+          </div>
+          <div className="text-xl font-bold text-white text-outline-gold truncate">
+            {formatBalance(usdtBalance)}
+          </div>
+        </div>
+
+        <div className="bg-slate-800/80 rounded-xl p-4 border border-purple-500/30 relative">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <CubeIcon className="w-5 h-5 text-purple-400" />
+              <div className="text-xs text-white text-outline-dark">SAS Token</div>
+            </div>
+            <button onClick={() => setShowSasInfo(!showSasInfo)}>
+              <QuestionMarkCircleIcon className="w-4 h-4 text-slate-400 hover:text-white" />
+            </button>
+          </div>
+          <div className="text-xl font-bold text-white text-outline-royal truncate">
+            {formatBalance(sasBalance)}
+          </div>
+
+          <AnimatePresence>
+            {showSasInfo && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-full right-0 mt-2 z-50 w-48 bg-slate-900 border border-purple-500 rounded-xl p-3 shadow-xl"
               >
-                <PlayIcon className="w-7 h-7" />
-                Start Now!
-              </motion.button>
-            </Link>
-          )}
+                <p className="text-xs text-white text-outline-dark mb-2">
+                  SAS is the native governance token. Earn it by staking USDT!
+                </p>
+                <button 
+                  onClick={() => setShowSasInfo(false)}
+                  className="text-[10px] text-purple-400 font-bold uppercase"
+                >
+                  Close
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="bg-slate-800/80 rounded-xl p-4 border border-slate-600">
+          <div className="text-xs text-white text-outline-dark mb-2 opacity-80">Total Staked</div>
+          <div className="text-lg font-bold text-white text-outline-green truncate">
+            {formatBalance(playerFarm.totalStaked)}
+          </div>
+        </div>
+        <div className="bg-slate-800/80 rounded-xl p-4 border border-yellow-500/30">
+          <div className="flex items-center gap-1 mb-2">
+            <SparklesIcon className="w-3 h-3 text-yellow-400 animate-pulse" />
+            <div className="text-xs text-white text-outline-dark opacity-80">Pending Yield</div>
+          </div>
+          <div className="text-lg font-bold text-yellow-400 text-outline-dark truncate">
+            +{formatBalance(playerFarm.pendingYield)}
+          </div>
+        </div>
+      </div>
+
+      <motion.div 
+        className={`mb-6 p-4 rounded-xl border flex items-center justify-between ${
+          hasShieldProtection()
+          ? 'bg-blue-900/20 border-blue-500/30'
+          : 'bg-red-900/20 border-red-500/30'
+        }`}
+        whileTap={{ scale: 0.98 }}
+      >
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center border ${
+            hasShieldProtection() ? 'bg-blue-500/20 border-blue-500/50' : 'bg-red-500/20 border-red-500/50'
+          }`}>
+            <ShieldCheckIcon className={`w-6 h-6 ${hasShieldProtection() ? 'text-blue-400' : 'text-red-400'}`} />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white text-outline-dark">
+              {hasShieldProtection() ? 'Kingdom Protected' : 'Vulnerable!'}
+            </p>
+            <p className="text-xs text-white/70">
+              {hasShieldProtection() ? 'Your yield is safe.' : 'Raiders can steal yield!'}
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-white text-outline-dark">Shields</p>
+          <p className="text-xl font-bold text-white text-outline-gold">{inventory.shields}</p>
         </div>
       </motion.div>
 
-      {/* Stats Cards - Royal Medal Badges */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <motion.div 
-          initial={showAnimations ? { scale: 0.8, opacity: 0 } : {}}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1, ...springTransition }}
-          whileHover={showAnimations ? { scale: 1.08, y: -6 } : {}}
-          className="stat-badge-gold text-center"
-        >
-          <div className="text-5xl mb-2 drop-shadow-lg relative z-10">🪙</div>
-          <p className="text-xs text-white font-black uppercase mb-1 relative z-10 text-outline-gold">USDT</p>
-          <p className="text-2xl sm:text-3xl font-black text-white text-outline-gold relative z-10 truncate">
-            {formatBalance(usdtBalance)}
-          </p>
-        </motion.div>
+      <h2 className="text-lg font-semibold flex items-center gap-2 text-white text-outline-dark mb-3">
+        <span className="text-yellow-400">⚡</span>
+        <span>Actions</span>
+      </h2>
 
-        <motion.div 
-          initial={showAnimations ? { scale: 0.8, opacity: 0 } : {}}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.15, ...springTransition }}
-          whileHover={showAnimations ? { scale: 1.08, y: -6 } : {}}
-          className="stat-badge-purple text-center"
-        >
-          <div className="text-5xl mb-2 drop-shadow-lg relative z-10">💜</div>
-          <p className="text-xs text-white font-black uppercase mb-1 relative z-10">SAS</p>
-          <p className="text-2xl sm:text-3xl font-black text-white relative z-10 truncate">
-            {formatBalance(sasBalance)}
-          </p>
-        </motion.div>
-
-        <motion.div 
-          initial={showAnimations ? { scale: 0.8, opacity: 0 } : {}}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2, ...springTransition }}
-          whileHover={showAnimations ? { scale: 1.08, y: -6 } : {}}
-          className="stat-badge-green text-center"
-        >
-          <div className="text-5xl mb-2 drop-shadow-lg relative z-10">📦</div>
-          <p className="text-xs text-white font-black uppercase mb-1 text-outline-green relative z-10">Staked</p>
-          <p className="text-2xl sm:text-3xl font-black text-white text-outline-green relative z-10 truncate">
-            {formatBalance(playerFarm.totalStaked)}
-          </p>
-        </motion.div>
-
-        <motion.div 
-          initial={showAnimations ? { scale: 0.8, opacity: 0 } : {}}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.25, ...springTransition }}
-          whileHover={showAnimations ? { scale: 1.08, y: -6 } : {}}
-          className={`text-center ${hasShieldProtection() ? 'stat-badge-blue animate-pulse-royal' : 'stat-badge-gray'}`}
-        >
-          <div className="text-5xl mb-2 drop-shadow-lg relative z-10">🛡️</div>
-          <p className="text-xs text-white font-black uppercase mb-1 relative z-10">Shields</p>
-          <p className="text-2xl sm:text-3xl font-black text-white relative z-10 truncate">
-            {inventory.shields}
-          </p>
-        </motion.div>
-
-        <motion.div 
-          initial={showAnimations ? { scale: 0.8, opacity: 0 } : {}}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.3, ...springTransition }}
-          whileHover={showAnimations ? { scale: 1.08, y: -6 } : {}}
-          className="stat-badge-gold text-center animate-pulse-royal"
-        >
-          <div className="text-5xl mb-2 drop-shadow-lg relative z-10">✨</div>
-          <p className="text-xs text-white font-black uppercase mb-1 relative z-10 text-outline-gold">Pending USDT</p>
-          <p className="text-2xl sm:text-3xl font-black text-white text-outline-gold relative z-10 truncate">
-            +{formatBalance(playerFarm.pendingYield)}
-          </p>
-        </motion.div>
-      </div>
-
-      {/* Quick Actions - Royal Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="space-y-3">
         <Link to="/farm">
           <motion.div 
-            initial={showAnimations ? { y: 20, opacity: 0 } : {}}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5, ...springTransition }}
-            whileHover={showAnimations ? { scale: 1.05, y: -10 } : {}}
-            whileTap={showAnimations ? { scale: 0.98 } : {}}
-            className="card-panel cursor-pointer"
+            className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50 hover:bg-slate-700/50 flex items-center justify-between group"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center gap-3 sm:gap-4 relative z-10">
-              <div className="text-4xl sm:text-6xl drop-shadow-lg flex-shrink-0">🌾</div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-black text-xl sm:text-2xl mb-1 text-white text-outline-dark truncate">Farm</h3>
-                <p className="text-white text-outline-dark font-bold text-sm sm:text-base">{activePlots}/{inventory.totalPlots} plots active</p>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center border border-green-500/30 group-hover:border-green-400 transition-colors">
+                <span className="text-2xl">🌾</span>
               </div>
-              <motion.div 
-                className="text-3xl sm:text-4xl drop-shadow-lg flex-shrink-0"
-                animate={showAnimations ? { rotate: [0, 360] } : {}}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              >
-                💰
-              </motion.div>
+              <div>
+                <p className="font-bold text-white text-lg">Manage Farm</p>
+                <p className="text-xs text-white/70">Active Plots: <span className="text-green-400 font-bold">{activePlots}/{inventory.totalPlots}</span></p>
+              </div>
             </div>
+            <div className="text-slate-400 group-hover:text-white transition-colors">→</div>
           </motion.div>
         </Link>
 
         <Link to="/raid">
           <motion.div 
-            initial={showAnimations ? { y: 20, opacity: 0 } : {}}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6, ...springTransition }}
-            whileHover={showAnimations ? { scale: 1.05, y: -10 } : {}}
-            whileTap={showAnimations ? { scale: 0.98 } : {}}
-            className="card-panel cursor-pointer"
+            className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50 hover:bg-slate-700/50 flex items-center justify-between group"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center gap-3 sm:gap-4 relative z-10">
-              <div className="text-4xl sm:text-6xl drop-shadow-lg flex-shrink-0">⚔️</div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-black text-xl sm:text-2xl mb-1 text-white text-outline-dark truncate">Raid</h3>
-                <p className="text-white text-outline-dark font-bold text-sm sm:text-base">{stats.successfulRaids} wins, {stats.failedRaids} losses</p>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center border border-red-500/30 group-hover:border-red-400 transition-colors">
+                <BoltIcon className="w-7 h-7 text-red-400" />
               </div>
-              <motion.div 
-                className="text-3xl sm:text-4xl drop-shadow-lg flex-shrink-0"
-                animate={showAnimations ? { scale: [1, 1.3, 1] } : {}}
-                transition={{ duration: 1, repeat: Infinity }}
-              >
-                💥
-              </motion.div>
+              <div>
+                <p className="font-bold text-white text-lg">Raid Enemies</p>
+                <p className="text-xs text-white/70">Steal yield from others</p>
+              </div>
             </div>
+            <div className="text-slate-400 group-hover:text-white transition-colors">→</div>
           </motion.div>
         </Link>
 
         <Link to="/stats">
           <motion.div 
-            initial={showAnimations ? { y: 20, opacity: 0 } : {}}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.7, ...springTransition }}
-            whileHover={showAnimations ? { scale: 1.05, y: -10 } : {}}
-            whileTap={showAnimations ? { scale: 0.98 } : {}}
-            className="card-panel cursor-pointer"
+            className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/50 hover:bg-slate-700/50 flex items-center justify-between group"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center gap-3 sm:gap-4 relative z-10">
-              <div className="text-4xl sm:text-6xl drop-shadow-lg flex-shrink-0">📊</div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-black text-xl sm:text-2xl mb-1 text-white text-outline-dark truncate">Stats</h3>
-                <p className="text-white text-outline-dark font-bold text-sm sm:text-base">Win rate: {winRate}%</p>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center border border-blue-500/30 group-hover:border-blue-400 transition-colors">
+                <ChartBarIcon className="w-7 h-7 text-blue-400" />
               </div>
-              <motion.div 
-                className="text-3xl sm:text-4xl drop-shadow-lg flex-shrink-0"
-                animate={showAnimations ? { y: [0, -10, 0] } : {}}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                📈
-              </motion.div>
+              <div>
+                <p className="font-bold text-white text-lg">Leaderboard</p>
+                <p className="text-xs text-white/70">Current Win Rate: <span className="text-blue-400 font-bold">{winRate}%</span></p>
+              </div>
             </div>
+            <div className="text-slate-400 group-hover:text-white transition-colors">→</div>
           </motion.div>
         </Link>
       </div>
 
-      {/* Combat Stats - Royal Panel */}
-      {(stats.successfulRaids > 0 || stats.failedRaids > 0 || stats.timesDefended > 0) && (
-        <motion.div
-          initial={showAnimations ? { opacity: 0, y: 20 } : {}}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, ...springTransition }}
-          className="panel-oak"
-        >
-          <h3 className="text-xl sm:text-2xl font-black mb-6 text-white text-outline-oak flex items-center gap-3 relative z-10">
-            <span className="text-3xl sm:text-4xl drop-shadow-lg flex-shrink-0">🏆</span>
-            <span className="truncate">Combat History</span>
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 relative z-10">
-            <div className="text-center p-2">
-              <div className="text-4xl sm:text-5xl mb-2 sm:mb-3 drop-shadow-lg">⚔️</div>
-              <p className="text-2xl sm:text-3xl font-black text-white text-outline-oak">{stats.successfulRaids}</p>
-              <p className="text-xs sm:text-sm text-white font-bold text-outline-oak">Raids Won</p>
-            </div>
-            <div className="text-center p-2">
-              <div className="text-4xl sm:text-5xl mb-2 sm:mb-3 drop-shadow-lg">💔</div>
-              <p className="text-2xl sm:text-3xl font-black text-white text-outline-oak">{stats.failedRaids}</p>
-              <p className="text-xs sm:text-sm text-white font-bold text-outline-oak">Raids Lost</p>
-            </div>
-            <div className="text-center p-2">
-              <div className="text-4xl sm:text-5xl mb-2 sm:mb-3 drop-shadow-lg">🛡️</div>
-              <p className="text-2xl sm:text-3xl font-black text-white text-outline-oak">{stats.timesDefended}</p>
-              <p className="text-xs sm:text-sm text-white font-bold text-outline-oak">Defended</p>
-            </div>
-            <div className="text-center p-2">
-              <div className="text-4xl sm:text-5xl mb-2 sm:mb-3 drop-shadow-lg">💰</div>
-              <p className="text-2xl sm:text-3xl font-black text-white text-outline-oak truncate">{formatBalance(stats.totalStolen)}</p>
-              <p className="text-xs sm:text-sm text-white font-bold text-outline-oak">Total Stolen</p>
-            </div>
-          </div>
-        </motion.div>
-      )}
     </motion.div>
   )
 }

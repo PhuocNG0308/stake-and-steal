@@ -326,7 +326,9 @@ export default function Farm() {
   const sasPerPlot = activePlots.length > 0
     ? pendingSasRewards / activePlots.length
     : 0
-  const canBuyMorePlots = inventory.totalPlots < MAX_PLOTS_PER_PLAYER && sasBalance >= PLOT_COST_SAS
+  const maxPlotsReached = inventory.totalPlots >= MAX_PLOTS_PER_PLAYER
+  const hasSasForPlot = sasBalance >= PLOT_COST_SAS
+  const canShowBuyPlot = !maxPlotsReached
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-4">
@@ -433,27 +435,17 @@ export default function Farm() {
         </div>
       </div>
 
-      {/* Buy Shield & Plot Buttons */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      {/* Buy Shield (Removed Plot button from here, kept Shield) */}
+      <div className="flex justify-center mb-6">
         <motion.button
           onClick={handleBuyShield}
           disabled={sasBalance < SHIELD_COST_SAS}
-          className="py-3 bg-gradient-to-r from-blue-600 to-cyan-600 disabled:from-slate-700 disabled:to-slate-700 rounded-xl font-medium text-sm flex items-center justify-center gap-2 text-white"
+          className="py-3 px-8 bg-gradient-to-r from-blue-600 to-cyan-600 disabled:from-slate-700 disabled:to-slate-700 rounded-xl font-medium text-sm flex items-center justify-center gap-2 text-white w-full sm:w-auto"
           whileHover={{ scale: sasBalance >= SHIELD_COST_SAS ? 1.02 : 1 }}
           whileTap={{ scale: sasBalance >= SHIELD_COST_SAS ? 0.98 : 1 }}
         >
           <ShieldCheckIcon className="w-5 h-5" />
           <span>Buy Shield ({SHIELD_COST_SAS} SAS)</span>
-        </motion.button>
-        <motion.button
-          onClick={handleBuyPlot}
-          disabled={!canBuyMorePlots}
-          className="py-3 bg-gradient-to-r from-yellow-600 to-orange-600 disabled:from-slate-700 disabled:to-slate-700 rounded-xl font-medium text-sm flex items-center justify-center gap-2 text-white"
-          whileHover={{ scale: canBuyMorePlots ? 1.02 : 1 }}
-          whileTap={{ scale: canBuyMorePlots ? 0.98 : 1 }}
-        >
-          <PlusCircleIcon className="w-5 h-5" />
-          <span>Buy Plot ({PLOT_COST_SAS} SAS)</span>
         </motion.button>
       </div>
 
@@ -507,9 +499,9 @@ export default function Farm() {
       {/* Plots Grid - Centered Responsive Layout */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-white text-outline-royal text-center">Your Plots</h2>
-        <div className="flex flex-wrap gap-4 justify-center items-stretch">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {playerFarm.plots.map((plot) => (
-            <div key={plot.plotId} className="w-[160px] min-w-[160px]">
+            <div key={plot.plotId} className="w-full">
               <PlotCard
                 plot={plot}
                 isOwnerView={!showRaiderView}
@@ -518,10 +510,39 @@ export default function Farm() {
                 onBuyPlot={handleBuyPlot}
                 pendingYieldShare={plot.hasTokens ? yieldPerPlot : 0}
                 pendingSasShare={plot.hasTokens ? sasPerPlot : 0}
-                canBuyPlot={canBuyMorePlots}
+                canBuyPlot={canShowBuyPlot}
               />
             </div>
           ))}
+
+          {/* Buy New Plot Button (Integrated as a Card) */}
+          {canShowBuyPlot && (
+             <motion.button
+               onClick={handleBuyPlot}
+               disabled={!hasSasForPlot}
+               className={`relative rounded-xl border-2 border-dashed h-[200px] flex flex-col items-center justify-center gap-3 transition-all group w-full ${
+                  hasSasForPlot
+                    ? 'border-white/30 bg-white/5 hover:bg-white/10 hover:border-white/50'
+                    : 'border-slate-700/50 bg-slate-800/50 opacity-70 cursor-not-allowed'
+               }`}
+               whileHover={{ scale: hasSasForPlot ? 1.02 : 1 }}
+               whileTap={{ scale: hasSasForPlot ? 0.98 : 1 }}
+             >
+               <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                  hasSasForPlot ? 'bg-yellow-500/20 group-hover:bg-yellow-500/30' : 'bg-slate-700'
+               }`}>
+                 <PlusCircleIcon className={`w-8 h-8 ${hasSasForPlot ? 'text-yellow-400' : 'text-slate-500'}`} />
+               </div>
+               <div className="text-center">
+                 <div className={`font-bold text-outline-dark ${hasSasForPlot ? 'text-white' : 'text-slate-400'}`}>Unlock New Plot</div>
+                 {hasSasForPlot ? (
+                   <div className="text-xs text-yellow-500 font-bold mt-1">{PLOT_COST_SAS} SAS</div>
+                 ) : (
+                   <div className="text-xs text-red-500 font-bold mt-1">Need {PLOT_COST_SAS} SAS</div>
+                 )}
+               </div>
+             </motion.button>
+          )}
         </div>
       </div>
 
