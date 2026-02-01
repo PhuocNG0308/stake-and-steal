@@ -1,4 +1,5 @@
 // Stake and Steal - Faucet Button Component
+// Unified "Get Free Tokens" for all wallet types
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -11,55 +12,49 @@ import { useWallet } from '@/hooks/useWallet';
 import { useWalletStore } from '@/stores';
 import { useGameDataStore } from '@/stores/gameDataStore';
 
-// Demo Faucet amounts
-const DEMO_FAUCET_SAS = 250;   // SAS governance tokens for testing
-const DEMO_FAUCET_USDT = 100;  // USDT staking tokens for testing
+// Free Token amounts (same for all wallet types in test mode)
+const FREE_TOKENS_SAS = 250;   // SAS governance tokens
+const FREE_TOKENS_USDT = 100;  // USDT staking tokens
 
 export default function FaucetButton() {
-  // Use store for reactive state (shared across components)
-  const { connected, walletType } = useWalletStore();
-  // Use hook for actions
-  const { faucetAvailable, requestFaucet } = useWallet();
+  // Use both hook and store to ensure we catch connected state
+  const walletHook = useWallet();
+  const walletStore = useWalletStore();
   const { addSasBalance, addUsdtBalance } = useGameDataStore();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
 
-  const handleRequestFaucet = async () => {
+  // Use either source for connected state (hook or store)
+  const connected = walletHook.connected || walletStore.connected;
+  const walletType = walletStore.walletType || walletHook.walletType;
+
+  const handleGetFreeTokens = async () => {
     if (!connected) return;
     
     setLoading(true);
     setResult(null);
     
     try {
-      // Special handling for Demo Wallet - Give both SAS and USDT for testing
-      if (walletType === 'demo') {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Give SAS + USDT for testing
-        addSasBalance(DEMO_FAUCET_SAS);
-        addUsdtBalance(DEMO_FAUCET_USDT);
-        
-        setResult({
-          success: true,
-          message: `Received ${DEMO_FAUCET_SAS} SAS + ${DEMO_FAUCET_USDT} USDT`,
-        });
-        
-        // Clear result after 5 seconds
-        setTimeout(() => setResult(null), 5000);
-        setLoading(false);
-        return;
-      }
-
-      const response = await requestFaucet();
-      setResult(response);
+      // Simulate network delay for all wallet types
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Give SAS + USDT tokens for testing
+      // In production with real testnet, this would call the actual Linera faucet
+      // For now, all wallets get test tokens locally for gameplay testing
+      addSasBalance(FREE_TOKENS_SAS);
+      addUsdtBalance(FREE_TOKENS_USDT);
+      
+      setResult({
+        success: true,
+        message: `Received ${FREE_TOKENS_SAS} SAS + ${FREE_TOKENS_USDT} USDT`,
+      });
       
       // Clear result after 5 seconds
       setTimeout(() => setResult(null), 5000);
     } catch (error) {
       setResult({
         success: false,
-        message: error instanceof Error ? error.message : 'Faucet request failed',
+        message: error instanceof Error ? error.message : 'Failed to get tokens',
       });
     } finally {
       setLoading(false);
@@ -70,15 +65,15 @@ export default function FaucetButton() {
     return null;
   }
 
-  const isDemoMode = walletType === 'demo';
-  const isDisabled = loading || (!isDemoMode && !faucetAvailable);
+  // Always enabled when connected (no faucet availability check needed for test tokens)
+  const isDisabled = loading;
 
   return (
     <div className="relative">
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        onClick={handleRequestFaucet}
+        onClick={handleGetFreeTokens}
         disabled={isDisabled}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
           isDisabled
@@ -88,7 +83,7 @@ export default function FaucetButton() {
       >
         <GiftIcon className={`w-5 h-5 ${loading ? 'animate-pulse' : ''}`} />
         <span>
-          {loading ? 'Requesting...' : isDemoMode ? 'Get Demo Tokens' : 'Claim Faucet'}
+          {loading ? 'Getting...' : 'Get Free Tokens'}
         </span>
       </motion.button>
 
@@ -117,10 +112,10 @@ export default function FaucetButton() {
         </motion.div>
       )}
 
-      {/* Faucet unavailable warning */}
-      {!isDemoMode && !faucetAvailable && (
-        <div className="absolute top-full mt-1 right-0 text-xs text-dark-500">
-          Faucet unavailable
+      {/* Wallet type indicator */}
+      {walletType && walletType !== 'demo' && (
+        <div className="absolute top-full mt-1 right-0 text-xs text-slate-400">
+          Test mode • {walletType}
         </div>
       )}
     </div>

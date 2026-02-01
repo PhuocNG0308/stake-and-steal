@@ -126,7 +126,7 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-4">
-            {connected && <FaucetButton />}
+            <FaucetButton />
             <WalletConnect />
           </div>
         </header>

@@ -11,6 +11,61 @@ export interface MetaMaskAdapter {
   disconnect(): Promise<void>;
 }
 
+// Linera Testnet Conway network configuration for MetaMask
+// Note: Linera is not an EVM chain, but we can use MetaMask for signing
+// This network info is for reference and wallet identification
+export const LINERA_TESTNET_CONWAY = {
+  chainId: '0x' + (59141).toString(16), // Custom chain ID for Linera Testnet Conway
+  chainName: 'Linera Testnet Conway',
+  nativeCurrency: {
+    name: 'LINERA',
+    symbol: 'LNRA',
+    decimals: 18,
+  },
+  rpcUrls: ['https://rpc.testnet-conway.linera.net'],
+  blockExplorerUrls: ['https://explorer.testnet-conway.linera.net'],
+};
+
+/**
+ * Try to switch MetaMask to Linera Testnet Conway network
+ * If the network doesn't exist, add it first
+ */
+export async function switchToLineraTestnet(provider: any): Promise<boolean> {
+  try {
+    // Try to switch to the network
+    await provider.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: LINERA_TESTNET_CONWAY.chainId }],
+    });
+    return true;
+  } catch (switchError: any) {
+    // Error code 4902 means the chain hasn't been added to MetaMask
+    if (switchError.code === 4902) {
+      try {
+        // Add the network
+        await provider.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: LINERA_TESTNET_CONWAY.chainId,
+            chainName: LINERA_TESTNET_CONWAY.chainName,
+            nativeCurrency: LINERA_TESTNET_CONWAY.nativeCurrency,
+            rpcUrls: LINERA_TESTNET_CONWAY.rpcUrls,
+            blockExplorerUrls: LINERA_TESTNET_CONWAY.blockExplorerUrls,
+          }],
+        });
+        return true;
+      } catch (addError) {
+        console.error('Failed to add Linera network:', addError);
+        // Network add failed, but we can still use the wallet for signing
+        return false;
+      }
+    }
+    // User rejected or other error - continue without switching
+    console.warn('Network switch skipped:', switchError.message);
+    return false;
+  }
+}
+
 // Detect available Ethereum wallets
 export interface DetectedWallet {
   name: string;
@@ -155,13 +210,38 @@ export function createMetaMaskAdapter(): MetaMaskAdapter {
 }
 
 // Connect via MetaMask and return Linera-compatible connection
+// This performs an authentication by signing a message to prove ownership
 export async function connectMetaMask(): Promise<WalletConnection> {
+  const metamaskProvider = getMetaMaskProvider();
+  if (!metamaskProvider) {
+    throw new Error('MetaMask not installed. Please install MetaMask extension.');
+  }
+  
   const adapter = createMetaMaskAdapter();
-  const { address } = await adapter.connect();
+  const { address, signer } = await adapter.connect();
+  
+  // Try to switch to Linera Testnet Conway (optional - doesn't block connection)
+  const networkSwitched = await switchToLineraTestnet(metamaskProvider);
+  console.log('Linera network switch:', networkSwitched ? 'success' : 'skipped');
+  
+  // Sign a message to authenticate the user (proves wallet ownership)
+  const timestamp = Date.now();
+  const networkInfo = networkSwitched ? 'Connected to Linera Testnet Conway' : 'Using MetaMask for signing';
+  const authMessage = `Sign this message to authenticate with Stake and Steal.\n\nNetwork: Linera Testnet Conway\nWallet: ${address}\nTimestamp: ${timestamp}\n\n${networkInfo}\n\nThis signature does not trigger any blockchain transaction or cost any gas fees.`;
+  
+  try {
+    const signature = await signer.signMessage(authMessage);
+    console.log('MetaMask authentication signature:', signature);
+    
+    // In production, you would verify this signature on the backend
+    // For now, we just confirm the user signed the message
+  } catch (error) {
+    throw new Error('Authentication cancelled. Please sign the message to connect.');
+  }
   
   return {
     owner: adapter.getLineraOwner(address),
-    chains: [], // MetaMask doesn't provide Linera chains
+    chains: [], // MetaMask doesn't provide Linera chains directly
     publicKey: address,
   };
 }

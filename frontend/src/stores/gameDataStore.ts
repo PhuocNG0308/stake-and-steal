@@ -220,30 +220,42 @@ export const useGameDataStore = create<GameDataStore>()(
 
       initializePlayer: (initialUsdtBalance: number, initialSasBalance: number = 0, walletId?: string) => {
         const id = walletId || `wallet-${Date.now()}`
+        
+        // Create completely fresh state for this player
+        // Use spread to ensure new object references
         set({
           currentWalletId: id,
           playerFarm: { ...createEmptyFarm(), id },
           usdtBalance: initialUsdtBalance,
           sasBalance: initialSasBalance,
-          inventory: initialInventory,
-          stats: initialStats,
+          inventory: { ...initialInventory },
+          stats: { ...initialStats },
           raidHistory: [],
+          // Preserve testVictims and networkPlayers for gameplay
           gameStartTime: Date.now(),
           lastTickTime: Date.now(),
         })
       },
 
       switchWallet: (walletId: string) => {
-        // Clear current player data and reinitialize for new wallet
-        // In production, this would load from blockchain
+        // Save current wallet to networkPlayers before switching (if it has data)
+        const currentState = get()
+        if (currentState.currentWalletId && currentState.playerFarm) {
+          get().registerOnNetwork()
+        }
+        
+        // IMPORTANT: Completely reset and reinitialize for new wallet
+        // This ensures no data bleeds between wallets
+        // In production, this would load from blockchain for the new wallet
         set({
           currentWalletId: walletId,
           playerFarm: { ...createEmptyFarm(), id: walletId },
-          usdtBalance: 10000, // Default starting USDT balance
-          sasBalance: 100,    // Default starting SAS balance
-          inventory: initialInventory,
-          stats: initialStats,
-          raidHistory: [],
+          usdtBalance: 10000, // Default starting USDT balance for new wallets
+          sasBalance: 100,    // Default starting SAS balance for new wallets
+          inventory: { ...initialInventory }, // Fresh inventory
+          stats: { ...initialStats },         // Fresh stats
+          raidHistory: [],                    // Clear raid history for new wallet
+          // testVictims and networkPlayers persist across wallet switches
           gameStartTime: Date.now(),
           lastTickTime: Date.now(),
         })
@@ -915,16 +927,20 @@ export const useGameDataStore = create<GameDataStore>()(
       },
 
       reset: () => {
+        // FULL RESET: Clear all player data including wallet association
+        // Note: networkPlayers is preserved for cross-wallet discovery
+        const currentNetworkPlayers = get().networkPlayers
+        
         set({
           currentWalletId: null,
           playerFarm: null,
           usdtBalance: 0,
           sasBalance: 0,
-          inventory: initialInventory,
-          stats: initialStats,
+          inventory: { ...initialInventory },  // Use spread to create new object
+          stats: { ...initialStats },          // Use spread to create new object
           raidHistory: [],
           testVictims: [],
-          // Note: networkPlayers is NOT reset - it persists across wallet switches
+          networkPlayers: currentNetworkPlayers, // Preserve network players
           gameStartTime: Date.now(),
           lastTickTime: Date.now(),
         })

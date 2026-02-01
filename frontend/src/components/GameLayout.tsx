@@ -7,6 +7,7 @@ import {
   Cog6ToothIcon,
 } from '@heroicons/react/24/solid'
 import { useWallet } from '@/hooks/useWallet'
+import { useWalletStore } from '@/stores'
 import { useGameData } from '@/stores/gameDataStore'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -29,10 +30,15 @@ const navItems = [
 
 export default function GameLayout() {
   const location = useLocation()
-  const { connected, walletType } = useWallet()
+  const walletHook = useWallet()
+  const walletStore = useWalletStore()
   const { usdtBalance, sasBalance, playerFarm, inventory, hasShieldProtection } = useGameData()
   const { isConnected: networkConnected, isMockMode } = useNetworkStatus()
   const { showAnimations } = useSettingsStore()
+
+  // Use either source for connected state (ensure consistent state)
+  const connected = walletHook.connected || walletStore.connected
+  const walletType = walletStore.walletType || walletHook.walletType
 
   // Game Data
   const displayBalance = usdtBalance

@@ -72,9 +72,7 @@ export function useWallet() {
 
   // Get game data store for wallet-specific data management
   const { 
-    currentWalletId,
     initializePlayer, 
-    switchWallet, 
     reset: resetGameData,
     registerOnNetwork 
   } = useGameDataStore();
@@ -97,6 +95,14 @@ export function useWallet() {
       if (hasDemoWallet()) {
         const demoWallet = loadDemoWallet();
         if (demoWallet) {
+          // Sync to zustand store FIRST
+          setStoreConnected(true);
+          setStoreOwner(demoWallet.owner);
+          setStoreChainId(demoWallet.chainId);
+          setStoreBalance(demoWallet.balance);
+          setStoreWalletType('demo');
+          
+          // Then update local state
           setState(s => ({
             ...s,
             walletType: 'demo',
@@ -105,12 +111,6 @@ export function useWallet() {
             chains: [demoWallet.chainId],
             balance: demoWallet.balance,
           }));
-          // Sync to zustand store
-          setStoreConnected(true);
-          setStoreOwner(demoWallet.owner);
-          setStoreChainId(demoWallet.chainId);
-          setStoreBalance(demoWallet.balance);
-          setStoreWalletType('demo');
           return;
         }
       }
@@ -119,6 +119,13 @@ export function useWallet() {
       if (isLineraWalletAvailable()) {
         const connection = await checkLineraConnection();
         if (connection) {
+          // Sync to zustand store FIRST
+          setStoreConnected(true);
+          setStoreOwner(connection.owner);
+          setStoreChainId(connection.chains[0] || null);
+          setStoreWalletType('linera');
+          
+          // Then update local state
           setState(s => ({
             ...s,
             walletType: 'linera',
@@ -126,11 +133,6 @@ export function useWallet() {
             owner: connection.owner,
             chains: connection.chains,
           }));
-          // Sync to zustand store
-          setStoreConnected(true);
-          setStoreOwner(connection.owner);
-          setStoreChainId(connection.chains[0] || null);
-          setStoreWalletType('linera');
         }
       }
     };
@@ -176,17 +178,18 @@ export function useWallet() {
           const demoWallet = loadDemoWallet();
           const walletId = connection.owner || `demo-${Date.now()}`;
           
-          // Initialize or switch game data for this wallet
-          if (currentWalletId !== walletId) {
-            if (!currentWalletId) {
-              initializePlayer(parseInt(demoWallet?.balance || '10000'), 0, walletId);
-            } else {
-              // Register current wallet before switching (for cross-wallet discovery)
-              registerOnNetwork();
-              switchWallet(walletId);
-            }
-          }
+          // Always initialize fresh data for this wallet connection
+          // This ensures clean state when switching between wallets
+          initializePlayer(parseInt(demoWallet?.balance || '10000'), 0, walletId);
           
+          // Sync to zustand store FIRST (so other components can react immediately)
+          setStoreConnected(true);
+          setStoreOwner(connection.owner);
+          setStoreChainId(connection.chains[0] || null);
+          setStoreBalance(demoWallet?.balance || '10000');
+          setStoreWalletType('demo');
+          
+          // Then update local state
           setState(s => ({
             ...s,
             walletType: 'demo',
@@ -196,12 +199,6 @@ export function useWallet() {
             balance: demoWallet?.balance || '10000',
             loading: false,
           }));
-          // Sync to zustand store
-          setStoreConnected(true);
-          setStoreOwner(connection.owner);
-          setStoreChainId(connection.chains[0] || null);
-          setStoreBalance(demoWallet?.balance || '10000');
-          setStoreWalletType('demo');
           return;
 
         case 'linera':
@@ -236,6 +233,18 @@ export function useWallet() {
           throw new Error('Unknown wallet type');
       }
 
+      // Always initialize fresh game data for the newly connected wallet
+      // This ensures clean state regardless of previous wallet state
+      const newWalletId = connection.owner || `${type}-${Date.now()}`;
+      initializePlayer(10000, 0, newWalletId);
+      
+      // Sync to zustand store FIRST (so other components can react immediately)
+      setStoreConnected(true);
+      setStoreOwner(connection.owner);
+      setStoreChainId(connection.chains[0] || null);
+      setStoreWalletType(type);
+      
+      // Then update local state
       setState(s => ({
         ...s,
         walletType: type,
@@ -244,23 +253,6 @@ export function useWallet() {
         chains: connection.chains,
         loading: false,
       }));
-      
-      // Initialize or switch game data for this wallet
-      const newWalletId = connection.owner || `${type}-${Date.now()}`;
-      if (currentWalletId !== newWalletId) {
-        if (!currentWalletId) {
-          initializePlayer(10000, 0, newWalletId);
-        } else {
-          registerOnNetwork();
-          switchWallet(newWalletId);
-        }
-      }
-      
-      // Sync to zustand store
-      setStoreConnected(true);
-      setStoreOwner(connection.owner);
-      setStoreChainId(connection.chains[0] || null);
-      setStoreWalletType(type);
     } catch (error) {
       setState(s => ({
         ...s,
@@ -275,12 +267,14 @@ export function useWallet() {
 
     try {
       // Register current wallet on network before disconnecting (for cross-wallet discovery)
-      registerOnNetwork();
+      if (state.owner) {
+        registerOnNetwork();
+      }
       
       switch (walletType) {
         case 'demo':
-          // Optionally keep demo wallet data
-          // clearDemoWallet();
+          // Clear demo wallet from localStorage on logout
+          clearDemoWallet();
           break;
         case 'linera':
           await disconnectLineraWallet();
@@ -299,20 +293,25 @@ export function useWallet() {
       console.error('Disconnect error:', error);
     }
 
-    // Reset game data for this wallet (but keep networkPlayers for cross-wallet discovery)
+    // IMPORTANT: Reset ALL game data for proper logout
+    // This clears player farm, balances, inventory, etc.
     resetGameData();
 
-    setState(s => ({
-      ...s,
+    // Reset local state
+    setState({
       walletType: null,
       connected: false,
       owner: null,
       chains: [],
+      loading: false,
+      error: null,
       balance: '0',
-    }));
-    // Sync to zustand store
+      faucetAvailable: state.faucetAvailable, // Keep faucet status
+    });
+    
+    // Sync to zustand wallet store
     storeDisconnect();
-  }, [state.walletType, storeDisconnect, registerOnNetwork, resetGameData]);
+  }, [state.walletType, state.owner, state.faucetAvailable, storeDisconnect, registerOnNetwork, resetGameData]);
 
   const sign = useCallback(async (message: string): Promise<string> => {
     const { walletType } = state;

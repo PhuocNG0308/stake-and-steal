@@ -6,6 +6,7 @@ export interface NetworkConfig {
   rpcUrl: string;
   explorerUrl: string;
   nodeServiceUrl: string;
+  applicationId?: string;
 }
 
 // Testnet Conway Configuration
@@ -15,6 +16,7 @@ export const testnetConfig: NetworkConfig = {
   rpcUrl: 'https://rpc.testnet-conway.linera.net',
   explorerUrl: 'https://explorer.testnet-conway.linera.net',
   nodeServiceUrl: 'https://rpc.testnet-conway.linera.net',
+  applicationId: import.meta.env.VITE_APP_ID || '',
 };
 
 // Local Development Configuration  
@@ -24,6 +26,7 @@ export const localConfig: NetworkConfig = {
   rpcUrl: 'http://localhost:8080',
   explorerUrl: 'http://localhost:8080/explorer',
   nodeServiceUrl: 'http://localhost:8080',
+  applicationId: import.meta.env.VITE_APP_ID || 'stake-and-steal-local',
 };
 
 // Determine which config to use based on environment
