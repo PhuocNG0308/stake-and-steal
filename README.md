@@ -90,7 +90,7 @@
 
 ```bash
 # Clone repository
-git clone https://github.com/YOUR_USERNAME/stake-and-steal.git
+git clone https://github.com/PhuocNG0308/stake-and-steal.git
 cd stake-and-steal
 
 # Install dependencies
