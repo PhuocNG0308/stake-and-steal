@@ -484,7 +484,7 @@ netlify deploy --prod
 - [x] Demo wallet with test tokens (250 SAS + 100 USDT)
 - [x] Linera Web Client integration
 - [x] Dual-token economy (USDT + SAS)
-- [ ] CheCko Wallet integration
+- [x] CheCko Wallet integration
 - [ ] Real FHE encryption for hidden balances
 - [ ] Guild/team mechanics
 - [ ] On-chain leaderboards

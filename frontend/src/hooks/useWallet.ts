@@ -66,6 +66,7 @@ export function useWallet() {
     setChainId: setStoreChainId,
     setOwner: setStoreOwner,
     setBalance: setStoreBalance,
+    setWalletType: setStoreWalletType,
     disconnect: storeDisconnect,
   } = useWalletStore();
 
@@ -109,6 +110,7 @@ export function useWallet() {
           setStoreOwner(demoWallet.owner);
           setStoreChainId(demoWallet.chainId);
           setStoreBalance(demoWallet.balance);
+          setStoreWalletType('demo');
           return;
         }
       }
@@ -128,6 +130,7 @@ export function useWallet() {
           setStoreConnected(true);
           setStoreOwner(connection.owner);
           setStoreChainId(connection.chains[0] || null);
+          setStoreWalletType('linera');
         }
       }
     };
@@ -198,6 +201,7 @@ export function useWallet() {
           setStoreOwner(connection.owner);
           setStoreChainId(connection.chains[0] || null);
           setStoreBalance(demoWallet?.balance || '10000');
+          setStoreWalletType('demo');
           return;
 
         case 'linera':
@@ -256,6 +260,7 @@ export function useWallet() {
       setStoreConnected(true);
       setStoreOwner(connection.owner);
       setStoreChainId(connection.chains[0] || null);
+      setStoreWalletType(type);
     } catch (error) {
       setState(s => ({
         ...s,

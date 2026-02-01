@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { GameState, NotificationItem, RaidPhase } from '@/types'
+import type { WalletType } from '@/lib/wallet-types'
 
 // Note: Wallet state is now managed by useWallet hook in hooks/useWallet.ts
 // This provides better integration with different wallet types (demo, Linera, MetaMask)
@@ -13,10 +14,12 @@ interface WalletStore {
   chainId: string | null
   owner: string | null
   balance: string
+  walletType: WalletType
   setConnected: (connected: boolean) => void
   setChainId: (chainId: string | null) => void
   setOwner: (owner: string | null) => void
   setBalance: (balance: string) => void
+  setWalletType: (walletType: WalletType) => void
   disconnect: () => void
 }
 
@@ -25,11 +28,13 @@ export const useWalletStore = create<WalletStore>()((set) => ({
   chainId: null,
   owner: null,
   balance: '0',
+  walletType: null,
   setConnected: (connected) => set({ connected }),
   setChainId: (chainId) => set({ chainId }),
   setOwner: (owner) => set({ owner }),
   setBalance: (balance) => set({ balance }),
-  disconnect: () => set({ connected: false, chainId: null, owner: null, balance: '0' }),
+  setWalletType: (walletType) => set({ walletType }),
+  disconnect: () => set({ connected: false, chainId: null, owner: null, balance: '0', walletType: null }),
 }))
 
 // ============================================================================

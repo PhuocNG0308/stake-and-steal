@@ -9,8 +9,7 @@ import {
   Bars3Icon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
-import { useUIStore, useGameStore } from '@/stores'
-import { useWallet } from '@/hooks/useWallet'
+import { useUIStore, useGameStore, useWalletStore } from '@/stores'
 import { formatBalance } from '@/utils/format'
 import WalletConnect from '@/components/wallet/WalletConnect'
 import FaucetButton from '@/components/wallet/FaucetButton'
@@ -27,10 +26,10 @@ const navItems = [
 export default function Layout() {
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const { availableBalance, totalDeposited } = useGameStore()
-  const { connected, walletType, balance } = useWallet()
+  const { connected, balance, walletType } = useWalletStore()
 
-  // Use wallet balance for demo mode, otherwise use game store
-  const displayBalance = walletType === 'demo' ? balance : availableBalance
+  // Use wallet balance from store
+  const displayBalance = balance || availableBalance
 
   return (
     <div className="min-h-screen flex">

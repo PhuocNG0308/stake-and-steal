@@ -8,6 +8,7 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useWallet } from '@/hooks/useWallet';
+import { useWalletStore } from '@/stores';
 import { useGameDataStore } from '@/stores/gameDataStore';
 
 // Demo Faucet amounts
@@ -15,7 +16,10 @@ const DEMO_FAUCET_SAS = 250;   // SAS governance tokens for testing
 const DEMO_FAUCET_USDT = 100;  // USDT staking tokens for testing
 
 export default function FaucetButton() {
-  const { connected, walletType, faucetAvailable, requestFaucet } = useWallet();
+  // Use store for reactive state (shared across components)
+  const { connected, walletType } = useWalletStore();
+  // Use hook for actions
+  const { faucetAvailable, requestFaucet } = useWallet();
   const { addSasBalance, addUsdtBalance } = useGameDataStore();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
