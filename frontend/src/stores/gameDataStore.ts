@@ -133,6 +133,7 @@ interface GameDataStore {
   
   // Raid actions
   executeRaid: (victimId: string, plotIndex: number) => { success: boolean; amount: number; blockedByShield: boolean }
+  executeRaidOnChain: (victimId: string, plotIndex: number) => { success: boolean; amount: number; blockedByShield: boolean; isNetworkPlayer: boolean }
   addRaidHistory: (entry: Omit<RaidHistoryEntry, 'id'>) => void
   
   // Test victim management
@@ -401,6 +402,7 @@ export const useGameDataStore = create<GameDataStore>()(
           balance: 0,
           pendingSasRewards: 0,
           depositTime: 0,
+          lastSasClaimTime: 0,
           isPurchased: true,
         }]
 
@@ -624,9 +626,9 @@ export const useGameDataStore = create<GameDataStore>()(
         if (!playerFarm || !currentWalletId) return
 
         // Check if already registered
-        if (networkPlayers.some(p => p.id === currentWalletId)) return
-
-        // Register current player as discoverable on network
+        const existingIndex = networkPlayers.findIndex(p => p.id === currentWalletId)
+        
+        // Register or update current player as discoverable on network
         const playerAsVictim: TestVictim = {
           id: currentWalletId,
           name: `Wallet ${currentWalletId.slice(0, 8)}...`,
@@ -635,16 +637,175 @@ export const useGameDataStore = create<GameDataStore>()(
           shields: inventory.shields,
           plotConfig: playerFarm.plots.map(p => p.hasTokens),
           plotBalances: playerFarm.plots.map(p => p.balance),
-          createdAt: Date.now(),
+          createdAt: existingIndex >= 0 ? networkPlayers[existingIndex].createdAt : Date.now(),
         }
 
-        set({ networkPlayers: [...networkPlayers, playerAsVictim] })
+        if (existingIndex >= 0) {
+          // Update existing registration
+          const updatedPlayers = [...networkPlayers]
+          updatedPlayers[existingIndex] = playerAsVictim
+          set({ networkPlayers: updatedPlayers })
+        } else {
+          // New registration
+          set({ networkPlayers: [...networkPlayers, playerAsVictim] })
+        }
       },
 
       discoverNetworkPlayers: () => {
         const { currentWalletId, networkPlayers } = get()
         // Return all network players except current wallet
         return networkPlayers.filter(p => p.id !== currentWalletId)
+      },
+
+      // Execute raid on another microchain
+      executeRaidOnChain: (victimId: string, plotIndex: number) => {
+        const { testVictims, networkPlayers, usdtBalance, stats, raidHistory } = get()
+        
+        // Find victim in both test victims and network players
+        let victim = testVictims.find(v => v.id === victimId)
+        let isNetworkPlayer = false
+        
+        if (!victim) {
+          victim = networkPlayers.find(v => v.id === victimId)
+          isNetworkPlayer = true
+        }
+        
+        if (!victim || plotIndex < 0 || plotIndex >= victim.plotConfig.length) {
+          return { success: false, amount: 0, blockedByShield: false, isNetworkPlayer: false }
+        }
+
+        // Check if victim has GLOBAL shield protection
+        if (victim.shields > 0) {
+          // Shield blocks the attack - update victim's shields
+          if (isNetworkPlayer) {
+            const newNetworkPlayers = networkPlayers.map(v => {
+              if (v.id === victimId) {
+                return { ...v, shields: v.shields - 1 }
+              }
+              return v
+            })
+            set({ networkPlayers: newNetworkPlayers })
+          } else {
+            const newVictims = testVictims.map(v => {
+              if (v.id === victimId) {
+                return { ...v, shields: v.shields - 1 }
+              }
+              return v
+            })
+            set({ testVictims: newVictims })
+          }
+
+          const historyEntry: RaidHistoryEntry = {
+            id: `raid-${Date.now()}`,
+            timestamp: Date.now(),
+            type: 'attack',
+            targetId: victimId,
+            targetName: victim.name,
+            plotIndex,
+            success: false,
+            amount: 0,
+            blockedByShield: true,
+          }
+
+          set({
+            stats: {
+              ...stats,
+              failedRaids: stats.failedRaids + 1,
+            },
+            raidHistory: [historyEntry, ...raidHistory].slice(0, 50),
+          })
+
+          return { success: false, amount: 0, blockedByShield: true, isNetworkPlayer }
+        }
+
+        // Check if the selected plot has tokens
+        const hasTokens = victim.plotConfig[plotIndex]
+        const plotBalance = victim.plotBalances[plotIndex]
+
+        if (hasTokens && plotBalance > 0) {
+          // Success! Calculate steal amount (15% of stake + yield)
+          const stealPercent = 15
+          const stealAmount = Math.floor(plotBalance * stealPercent / 100)
+
+          // Update victim's balance
+          if (isNetworkPlayer) {
+            const newNetworkPlayers = networkPlayers.map(v => {
+              if (v.id === victimId) {
+                const newBalances = [...v.plotBalances]
+                newBalances[plotIndex] = Math.max(0, newBalances[plotIndex] - stealAmount)
+                return {
+                  ...v,
+                  plotBalances: newBalances,
+                  totalStaked: v.totalStaked - stealAmount,
+                }
+              }
+              return v
+            })
+            set({ networkPlayers: newNetworkPlayers })
+          } else {
+            const newVictims = testVictims.map(v => {
+              if (v.id === victimId) {
+                const newBalances = [...v.plotBalances]
+                newBalances[plotIndex] = Math.max(0, newBalances[plotIndex] - stealAmount)
+                return {
+                  ...v,
+                  plotBalances: newBalances,
+                  totalStaked: v.totalStaked - stealAmount,
+                }
+              }
+              return v
+            })
+            set({ testVictims: newVictims })
+          }
+
+          // Add raid history
+          const historyEntry: RaidHistoryEntry = {
+            id: `raid-${Date.now()}`,
+            timestamp: Date.now(),
+            type: 'attack',
+            targetId: victimId,
+            targetName: victim.name,
+            plotIndex,
+            success: true,
+            amount: stealAmount,
+            blockedByShield: false,
+          }
+
+          set({
+            usdtBalance: usdtBalance + stealAmount,
+            stats: {
+              ...stats,
+              totalStolen: stats.totalStolen + stealAmount,
+              successfulRaids: stats.successfulRaids + 1,
+            },
+            raidHistory: [historyEntry, ...raidHistory].slice(0, 50),
+          })
+
+          return { success: true, amount: stealAmount, blockedByShield: false, isNetworkPlayer }
+        } else {
+          // Failed - wrong plot
+          const historyEntry: RaidHistoryEntry = {
+            id: `raid-${Date.now()}`,
+            timestamp: Date.now(),
+            type: 'attack',
+            targetId: victimId,
+            targetName: victim.name,
+            plotIndex,
+            success: false,
+            amount: 0,
+            blockedByShield: false,
+          }
+
+          set({
+            stats: {
+              ...stats,
+              failedRaids: stats.failedRaids + 1,
+            },
+            raidHistory: [historyEntry, ...raidHistory].slice(0, 50),
+          })
+
+          return { success: false, amount: 0, blockedByShield: false, isNetworkPlayer }
+        }
       },
 
       // Dual-token balance management
@@ -813,5 +974,7 @@ export function useGameData() {
     totalPlots,
     shields,
     winRate,
+    // Cross-chain raid function
+    executeRaidOnChain: store.executeRaidOnChain,
   }
 }

@@ -1,0 +1,8 @@
+D:\Projects\Blockchain\stake-and-steal\smart_contract\target\release\deps\libsynstructure-bced8c8fc62b301c.rmeta: C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\synstructure-0.13.2\src\lib.rs C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\synstructure-0.13.2\src\macros.rs
+
+D:\Projects\Blockchain\stake-and-steal\smart_contract\target\release\deps\libsynstructure-bced8c8fc62b301c.rlib: C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\synstructure-0.13.2\src\lib.rs C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\synstructure-0.13.2\src\macros.rs
+
+D:\Projects\Blockchain\stake-and-steal\smart_contract\target\release\deps\synstructure-bced8c8fc62b301c.d: C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\synstructure-0.13.2\src\lib.rs C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\synstructure-0.13.2\src\macros.rs
+
+C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\synstructure-0.13.2\src\lib.rs:
+C:\Users\Admin\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\synstructure-0.13.2\src\macros.rs:

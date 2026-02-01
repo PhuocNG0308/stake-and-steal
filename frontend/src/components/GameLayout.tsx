@@ -5,10 +5,8 @@ import {
   BoltIcon,
   ChartBarIcon,
   Cog6ToothIcon,
-  WalletIcon,
 } from '@heroicons/react/24/solid'
 import { useWallet } from '@/hooks/useWallet'
-import { useUIStore } from '@/stores'
 import { useGameData } from '@/stores/gameDataStore'
 import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -33,7 +31,6 @@ export default function GameLayout() {
   const location = useLocation()
   const { connected, walletType } = useWallet()
   const { usdtBalance, sasBalance, playerFarm, inventory, hasShieldProtection } = useGameData()
-  const { openModal } = useUIStore()
   const { isConnected: networkConnected, isMockMode } = useNetworkStatus()
   const { showAnimations } = useSettingsStore()
 

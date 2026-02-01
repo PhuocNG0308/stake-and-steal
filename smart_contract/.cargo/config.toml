@@ -1,4 +1,4 @@
 [target.wasm32-unknown-unknown]
 rustflags = [
-    "-C", "target-feature=-sign-ext,-bulk-memory",
+    "-C", "target-feature=-sign-ext,-bulk-memory,-reference-types,-multivalue,-mutable-globals,-nontrapping-fptoint",
 ]

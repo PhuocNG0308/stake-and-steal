@@ -7,12 +7,14 @@ import {
 } from '@apollo/client'
 import { config, APP_ID } from '@/config'
 import {
-  mockDashboardData,
   mockPlayerData,
+  mockInventoryData,
   mockStatsData,
   mockConfigData,
   mockPagesData,
-  mockRaidStateData,
+  mockDashboardData,
+  mockFarmData,
+  mockRaidData,
   mockCooldownData,
   mockPendingYieldData,
   mockPowerScoreData,
@@ -44,8 +46,14 @@ const mockLink = new ApolloLink((operation) => {
         case 'GetDashboardData':
           data = mockDashboardData;
           break;
+        case 'GetPlayer':
+          data = mockPlayerData;
+          break;
         case 'GetPlayerStatus':
           data = mockPlayerData;
+          break;
+        case 'GetInventory':
+          data = mockInventoryData;
           break;
         case 'GetStats':
           data = mockStatsData;
@@ -56,19 +64,29 @@ const mockLink = new ApolloLink((operation) => {
         case 'GetAllPages':
           data = mockPagesData;
           break;
+        case 'GetFarmData':
+          data = mockFarmData;
+          break;
+        case 'GetRaidData':
+          data = mockRaidData;
+          break;
         case 'GetPage':
           const pageId = operation.variables?.pageId ?? 0;
-          const page = mockPagesData.allPages.find(p => p.pageId === pageId);
+          const page = mockPagesData.pages.find(p => p.pageId === pageId);
           data = { page: page || null };
-          break;
-        case 'GetRaidState':
-          data = mockRaidStateData;
           break;
         case 'GetCooldownStatus':
           data = mockCooldownData;
           break;
-        case 'GetPendingYield':
+        case 'GetPendingTokenAYield':
+        case 'GetPendingSasRewards':
           data = mockPendingYieldData;
+          break;
+        case 'GetTokenABalance':
+          data = { tokenABalance: mockPlayerData.player.tokenABalance };
+          break;
+        case 'GetTokenBBalance':
+          data = { tokenBBalance: mockPlayerData.player.tokenBBalance };
           break;
         case 'GetPowerScore':
           data = mockPowerScoreData;
@@ -101,7 +119,7 @@ export const apolloClient = new ApolloClient({
     typePolicies: {
       Query: {
         fields: {
-          allPages: {
+          pages: {
             merge: false,
           },
         },

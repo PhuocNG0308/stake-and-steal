@@ -1,43 +1,101 @@
 /**
- * Types matching the Linera smart contract
+ * Types matching the Linera smart contract service.rs
  */
 
 // ============================================================================
-// CORE TYPES
+// CORE TYPES - Match service.rs GraphQL types
 // ============================================================================
 
-export interface PlotInfo {
-  plotId: number
-  balance: string
-  encryptedBalance: string
-  lastClaimBlock: string
-  isEmpty: boolean
-  isLocked: boolean
-  lockUntilBlock: string | null
-  yieldEarned: string
-  estimatedYield: string
+/**
+ * Player information matching PlayerInfo in service.rs
+ */
+export interface PlayerInfo {
+  isRegistered: boolean
+  encryptedName: string
+  /** Token A (USDT) balance */
+  tokenABalance: string
+  /** Token B (SAS) balance */
+  tokenBBalance: string
+  pageCount: number
+  raidState: string
 }
 
+/**
+ * Inventory matching InventoryInfo in service.rs
+ */
+export interface InventoryInfo {
+  totalPlots: number
+  shields: number
+}
+
+/**
+ * Plot information matching PlotInfo in service.rs
+ */
+export interface PlotInfo {
+  plotId: number
+  /** Token A balance in this plot */
+  tokenABalance: string
+  /** Pending Token A yield */
+  pendingTokenAYield: string
+  /** Pending SAS rewards */
+  pendingSasRewards: string
+  depositBlock: string
+  lastClaimBlock: string
+  isActive: boolean
+  isPurchased: boolean
+}
+
+/**
+ * Page information matching PageInfo in service.rs
+ */
 export interface PageInfo {
   pageId: number
   plots: PlotInfo[]
   totalBalance: string
-  activePlots: number
+  totalPendingYield: string
+  totalPendingSas: string
 }
 
+/**
+ * Player statistics matching StatsInfo in service.rs
+ */
 export interface PlayerStats {
   totalDeposited: string
   totalWithdrawn: string
-  totalYieldEarned: string
-  totalStolenFromOthers: string
-  totalLostToThieves: string
+  /** Total Token A yield earned */
+  totalTokenAYieldEarned: string
+  /** Total SAS earned */
+  totalSasEarned: string
+  /** Total SAS spent (on plots and shields) */
+  totalSasSpent: string
+  totalStolen: string
+  totalLostToSteals: string
   successfulSteals: number
   failedSteals: number
   timesRaided: number
-  timesDefended: number
-  winRate: number
+  shieldsUsed: number
+  plotsPurchased: number
 }
 
+/**
+ * Game configuration matching ConfigInfo in service.rs
+ */
+export interface GameConfig {
+  yieldRateBps: number
+  sasRewardRateBps: number
+  /** Minimum stake required for guaranteed steal */
+  minStealStake: string
+  minDeposit: string
+  maxDeposit: string
+  raidCooldownBlocks: string
+  maxTargetsPerRequest: number
+  plotCostSas: string
+  shieldCostSas: string
+}
+
+/**
+ * Raid target information
+ */
 export interface TargetInfo {
   chainId: string
   estimatedValue: string
@@ -45,6 +103,9 @@ export interface TargetInfo {
   defenseScore: number
 }
 
+/**
+ * Raid state
+ */
 export interface RaidState {
   state: string
   targets: TargetInfo[] | null
@@ -53,20 +114,8 @@ export interface RaidState {
   commitment: string | null
 }
 
-export interface GameConfig {
-  yieldRateBps: string
-  /** Minimum stake required for guaranteed steal */
-  minStealStake: string
-  stealCooldownBlocks: string
-  maxPages: number
-  maxPlotsPerPage: number
-  minDeposit: string
-  /** Percentage taken during steal (0-100) */
-  stealPercentage: number
-}
-
 // ============================================================================
-// OPERATION TYPES
+// OPERATION TYPES - Match contract.rs operations
 // ============================================================================
 
 export type OperationType =
@@ -121,6 +170,40 @@ export interface ClaimAllOperation {
   ClaimAll: null
 }
 
+export interface ClaimYieldOperation {
+  ClaimYield: {
+    page_id: number
+    plot_id: number
+  }
+}
+
+export interface ClaimAllYieldOperation {
+  ClaimAllYield: null
+}
+
+export interface ClaimSasRewardsOperation {
+  ClaimSasRewards: {
+    page_id: number
+    plot_id: number
+  }
+}
+
+export interface ClaimAllSasRewardsOperation {
+  ClaimAllSasRewards: null
+}
+
+export interface BuyPlotOperation {
+  BuyPlot: {
+    page_id: number
+  }
+}
+
+export interface BuyShieldOperation {
+  BuyShield: {
+    count: number
+  }
+}
+
 export interface FindTargetsOperation {
   FindTargets: {
     count: number
@@ -159,6 +242,12 @@ export type Operation =
   | WithdrawOperation
   | ClaimOperation
   | ClaimAllOperation
+  | ClaimYieldOperation
+  | ClaimAllYieldOperation
+  | ClaimSasRewardsOperation
+  | ClaimAllSasRewardsOperation
+  | BuyPlotOperation
+  | BuyShieldOperation
   | FindTargetsOperation
   | LockTargetOperation
   | ExecuteStealOperation

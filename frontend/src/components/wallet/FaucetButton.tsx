@@ -10,9 +10,13 @@ import {
 import { useWallet } from '@/hooks/useWallet';
 import { useGameDataStore } from '@/stores/gameDataStore';
 
+// Demo Faucet amounts
+const DEMO_FAUCET_SAS = 250;   // SAS governance tokens for testing
+const DEMO_FAUCET_USDT = 100;  // USDT staking tokens for testing
+
 export default function FaucetButton() {
   const { connected, walletType, faucetAvailable, requestFaucet } = useWallet();
-  const { addSasBalance } = useGameDataStore();
+  const { addSasBalance, addUsdtBalance } = useGameDataStore();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -23,16 +27,18 @@ export default function FaucetButton() {
     setResult(null);
     
     try {
-      // Special handling for Demo Wallet - Give SAS instead of USDT
+      // Special handling for Demo Wallet - Give both SAS and USDT for testing
       if (walletType === 'demo') {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        addSasBalance(250);
+        // Give SAS + USDT for testing
+        addSasBalance(DEMO_FAUCET_SAS);
+        addUsdtBalance(DEMO_FAUCET_USDT);
         
         setResult({
           success: true,
-          message: 'Received 250 SAS Tokens',
+          message: `Received ${DEMO_FAUCET_SAS} SAS + ${DEMO_FAUCET_USDT} USDT`,
         });
         
         // Clear result after 5 seconds

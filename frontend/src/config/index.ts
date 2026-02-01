@@ -35,6 +35,9 @@ export const config: NetworkConfig = isTestnet ? testnetConfig : localConfig;
 // Application ID - will be set after deployment
 export const APP_ID = import.meta.env.VITE_APP_ID || '';
 
+// Chain ID - from environment or default
+export const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || '';
+
 // Game constants
 export const GAME_NAME = 'Stake and Steal';
 export const MIN_STEAL_STAKE = 1000; // Minimum stake required for guaranteed steal

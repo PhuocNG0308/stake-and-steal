@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "name": "stake-and-steal",
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "env": {
+    "VITE_NETWORK": "testnet",
+    "VITE_APP_ID": "d9bb9c6addc854108bcf5aa1b9439f92f11e09fb6fb3e902a5abbee1345c390b",
+    "VITE_CHAIN_ID": "af4551f49b4984389cc26c716635e77ae436cf877e386b34d57833372dd17a41",
+    "VITE_NODE_SERVICE_URL": "https://rpc.testnet-conway.linera.net",
+    "VITE_FAUCET_URL": "https://faucet.testnet-conway.linera.net",
+    "VITE_USE_MOCK": "true",
+    "VITE_ENABLE_DEMO_WALLET": "true"
+  }
+}

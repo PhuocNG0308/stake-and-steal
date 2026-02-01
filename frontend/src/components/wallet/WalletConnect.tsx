@@ -33,13 +33,13 @@ export default function WalletConnect({ compact = false }: WalletConnectProps) {
   const {
     connected,
     owner,
-    walletType,
     loading,
     error,
-    balance,
     connect,
     disconnect,
     isLineraAvailable,
+    isCheCkoAvailable,
+    isCroissantAvailable,
     isMetaMaskAvailable,
   } = useWallet();
 
@@ -59,27 +59,55 @@ export default function WalletConnect({ compact = false }: WalletConnectProps) {
       type: 'demo',
       name: 'Demo Wallet',
       icon: <BeakerIcon className="w-6 h-6" />,
-      description: 'Try the game without real tokens',
+      description: 'Try the game with 250 SAS + 100 USDT test tokens',
       available: true,
       warning: 'Demo wallet data is stored locally and will NOT sync to testnet. Use for testing only!',
+    },
+    {
+      type: 'checko',
+      name: 'CheCko Wallet',
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+      ),
+      description: isCheCkoAvailable 
+        ? 'Native Linera wallet for cross-chain transactions' 
+        : 'Install CheCko browser extension',
+      available: isCheCkoAvailable,
+    },
+    {
+      type: 'croissant',
+      name: 'Croissant Wallet',
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+        </svg>
+      ),
+      description: isCroissantAvailable 
+        ? 'Mobile-first Linera wallet' 
+        : 'Install Croissant app or extension',
+      available: isCroissantAvailable,
     },
     {
       type: 'linera',
       name: 'Linera Wallet',
       icon: <CubeIcon className="w-6 h-6" />,
-      description: 'Connect with native Linera wallet',
+      description: isLineraAvailable 
+        ? 'Connect with native Linera wallet' 
+        : 'Linera wallet extension not detected',
       available: isLineraAvailable,
     },
     {
       type: 'metamask',
-      name: 'MetaMask',
+      name: 'MetaMask (Adapter)',
       icon: (
         <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
           <path d="M21.77 5.24l-9.01-4.71c-.47-.25-1.03-.25-1.51 0L2.24 5.24c-.47.25-.76.73-.76 1.26v10.99c0 .52.29 1.01.76 1.26l9.01 4.71c.24.12.51.19.78.19s.54-.06.78-.19l9.01-4.71c.47-.25.76-.73.76-1.26V6.5c-.02-.53-.31-1.01-.79-1.26z"/>
         </svg>
       ),
       description: isMetaMaskAvailable 
-        ? 'Connect via MetaMask (adapter)' 
+        ? 'Connect via MetaMask (limited features)' 
         : detectedWallets.length > 0 
           ? `${detectedWallets.length} wallet(s) detected - select one`
           : 'No Ethereum wallet detected',

@@ -1,20 +1,19 @@
 import { gql } from '@apollo/client'
 
 // ============================================================================
-// FRAGMENTS
+// FRAGMENTS - Match service.rs types
 // ============================================================================
 
 export const PLOT_FRAGMENT = gql`
   fragment PlotFields on PlotInfo {
     plotId
-    balance
-    encryptedBalance
+    tokenABalance
+    pendingTokenAYield
+    pendingSasRewards
+    depositBlock
     lastClaimBlock
-    isEmpty
-    isLocked
-    lockUntilBlock
-    yieldEarned
-    estimatedYield
+    isActive
+    isPurchased
   }
 `
 
@@ -25,86 +24,81 @@ export const PAGE_FRAGMENT = gql`
       ...PlotFields
     }
     totalBalance
-    activePlots
+    totalPendingYield
+    totalPendingSas
   }
   ${PLOT_FRAGMENT}
 `
 
 export const STATS_FRAGMENT = gql`
-  fragment StatsFields on PlayerStatsInfo {
+  fragment StatsFields on StatsInfo {
     totalDeposited
     totalWithdrawn
-    totalYieldEarned
-    totalStolenFromOthers
-    totalLostToThieves
+    totalTokenAYieldEarned
+    totalSasEarned
+    totalSasSpent
+    totalStolen
+    totalLostToSteals
     successfulSteals
     failedSteals
     timesRaided
-    timesDefended
-    winRate
-  }
-`
-
-export const RAID_STATE_FRAGMENT = gql`
-  fragment RaidStateFields on RaidStateInfo {
-    state
-    targets {
-      chainId
-      estimatedValue
-      lastActiveBlock
-      defenseScore
-    }
-    lockedTarget
-    lockUntil
-    commitment
+    shieldsUsed
+    plotsPurchased
   }
 `
 
 export const CONFIG_FRAGMENT = gql`
-  fragment ConfigFields on GameConfigInfo {
+  fragment ConfigFields on ConfigInfo {
     yieldRateBps
+    sasRewardRateBps
     minStealStake
-    stealCooldownBlocks
-    maxPages
-    maxPlotsPerPage
     minDeposit
-    stealPercentage
+    maxDeposit
+    raidCooldownBlocks
+    maxTargetsPerRequest
+    plotCostSas
+    shieldCostSas
   }
 `
 
-// ============================================================================
-// QUERIES
-// ============================================================================
+export const INVENTORY_FRAGMENT = gql`
+  fragment InventoryFields on InventoryInfo {
+    totalPlots
+    shields
+  }
+`
 
-export const GET_PLAYER_STATUS = gql`
-  query GetPlayerStatus {
+export const PLAYER_FRAGMENT = gql`
+  fragment PlayerFields on PlayerInfo {
     isRegistered
-    chainId
-    registryChainId
-    availableBalance
-    totalDeposited
-    totalYieldEarned
+    encryptedName
+    tokenABalance
+    tokenBBalance
     pageCount
-    currentBlock
+    raidState
   }
 `
 
-export const GET_ALL_PAGES = gql`
-  query GetAllPages {
-    allPages {
-      ...PageFields
+// ============================================================================
+// QUERIES - Match service.rs QueryRoot
+// ============================================================================
+
+export const GET_PLAYER = gql`
+  query GetPlayer {
+    player {
+      ...PlayerFields
     }
   }
-  ${PAGE_FRAGMENT}
+  ${PLAYER_FRAGMENT}
 `
 
-export const GET_PAGE = gql`
-  query GetPage($pageId: Int!) {
-    page(pageId: $pageId) {
-      ...PageFields
+export const GET_INVENTORY = gql`
+  query GetInventory {
+    inventory {
+      ...InventoryFields
     }
   }
-  ${PAGE_FRAGMENT}
+  ${INVENTORY_FRAGMENT}
 `
 
 export const GET_STATS = gql`
@@ -116,15 +110,6 @@ export const GET_STATS = gql`
   ${STATS_FRAGMENT}
 `
 
-export const GET_RAID_STATE = gql`
-  query GetRaidState {
-    raidState {
-      ...RaidStateFields
-    }
-  }
-  ${RAID_STATE_FRAGMENT}
-`
-
 export const GET_CONFIG = gql`
   query GetConfig {
     config {
@@ -134,42 +119,136 @@ export const GET_CONFIG = gql`
   ${CONFIG_FRAGMENT}
 `
 
-export const GET_PENDING_YIELD = gql`
-  query GetPendingYield {
-    totalPendingYield
+export const GET_TOKEN_A_BALANCE = gql`
+  query GetTokenABalance {
+    tokenABalance
+  }
+`
+
+export const GET_TOKEN_B_BALANCE = gql`
+  query GetTokenBBalance {
+    tokenBBalance
+  }
+`
+
+export const GET_PAGE = gql`
+  query GetPage($pageId: Int!) {
+    page(pageId: $pageId) {
+      ...PageFields
+    }
+  }
+  ${PAGE_FRAGMENT}
+`
+
+export const GET_ALL_PAGES = gql`
+  query GetAllPages {
+    pages {
+      ...PageFields
+    }
+  }
+  ${PAGE_FRAGMENT}
+`
+
+export const GET_PENDING_TOKEN_A_YIELD = gql`
+  query GetPendingTokenAYield {
+    pendingTokenAYield
+  }
+`
+
+export const GET_PENDING_SAS_REWARDS = gql`
+  query GetPendingSasRewards {
+    pendingSasRewards
+  }
+`
+
+// ============================================================================
+// COMBINED QUERIES - For efficiency
+// ============================================================================
+
+export const GET_DASHBOARD_DATA = gql`
+  query GetDashboardData {
+    player {
+      ...PlayerFields
+    }
+    inventory {
+      ...InventoryFields
+    }
+    stats {
+      ...StatsFields
+    }
+    config {
+      ...ConfigFields
+    }
+    pendingTokenAYield
+    pendingSasRewards
+  }
+  ${PLAYER_FRAGMENT}
+  ${INVENTORY_FRAGMENT}
+  ${STATS_FRAGMENT}
+  ${CONFIG_FRAGMENT}
+`
+
+export const GET_FARM_DATA = gql`
+  query GetFarmData {
+    player {
+      tokenABalance
+      tokenBBalance
+      pageCount
+    }
+    pages {
+      ...PageFields
+    }
+    pendingTokenAYield
+    pendingSasRewards
+    config {
+      yieldRateBps
+      sasRewardRateBps
+      minDeposit
+      maxDeposit
+      plotCostSas
+    }
+  }
+  ${PAGE_FRAGMENT}
+`
+
+export const GET_RAID_DATA = gql`
+  query GetRaidData {
+    player {
+      tokenABalance
+      tokenBBalance
+      raidState
+    }
+    config {
+      minStealStake
+      raidCooldownBlocks
+      shieldCostSas
+    }
+    inventory {
+      shields
+    }
+  }
+`
+
+// ============================================================================
+// LEGACY QUERIES - For backwards compatibility
+// ============================================================================
+
+export const GET_PLAYER_STATUS = gql`
+  query GetPlayerStatus {
+    player {
+      isRegistered
+      tokenABalance
+      tokenBBalance
+      pageCount
+      raidState
+    }
   }
 `
 
 export const GET_COOLDOWN_STATUS = gql`
   query GetCooldownStatus {
-    isOnCooldown
-    cooldownRemaining
-    lastStealBlock
-  }
-`
-
-export const GET_POWER_SCORE = gql`
-  query GetPowerScore {
-    powerScore
-  }
-`
-
-export const GET_DASHBOARD_DATA = gql`
-  query GetDashboardData {
-    isRegistered
-    availableBalance
-    totalDeposited
-    totalYieldEarned
-    totalPendingYield
-    pageCount
-    stats {
-      ...StatsFields
+    player {
+      raidState
     }
-    raidState {
-      state
-    }
-    isOnCooldown
-    cooldownRemaining
   }
-  ${STATS_FRAGMENT}
 `

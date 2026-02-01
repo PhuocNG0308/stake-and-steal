@@ -1,4 +1,4 @@
-[package]
+﻿[package]
 name = "stake-and-steal"
 version = "0.1.0"
 edition = "2021"
@@ -6,9 +6,10 @@ description = "Stake and Steal - A GameFi application on Linera with Yield Farmi
 authors = ["RedZero Team"]
 
 [dependencies]
-async-graphql = { version = "7.0.11", default-features = false }
+# Pin exact versions matching linera-protocol for Rust 1.86 compatibility
+async-graphql = { version = "=7.0.17", default-features = false }
 async-trait = "0.1"
-linera-sdk = "0.15.8"
+linera-sdk = "=0.15.8"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "1.0"
@@ -17,7 +18,7 @@ sha2 = "0.10"
 hex = "0.4"
 
 [dev-dependencies]
-linera-sdk = { version = "0.15.8", features = ["test"] }
+linera-sdk = { version = "=0.15.8", features = ["test"] }
 tokio = { version = "1.38", features = ["rt", "sync", "macros"] }
 
 [[bin]]

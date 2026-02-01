@@ -19,6 +19,8 @@
 //! ## Hidden Plot System
 //! Players have plots to hide their tokens. The plot configuration is encrypted on-chain
 //! so raiders must guess which plot has tokens. More risk = more reward!
+//!
+//! ## Version: 2.0.1-conway - Testnet deployment build
 
 use linera_sdk::linera_base_types::{ChainId, Timestamp};
 use serde::{Deserialize, Serialize};

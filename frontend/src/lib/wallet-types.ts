@@ -1,6 +1,6 @@
 // Stake and Steal - Wallet Types and Interfaces
 
-export type WalletType = 'demo' | 'linera' | 'metamask' | null;
+export type WalletType = 'demo' | 'linera' | 'checko' | 'croissant' | 'metamask' | null;
 
 export interface WalletConnection {
   owner: string;
@@ -22,6 +22,32 @@ export interface DemoWalletData {
   privateKey: string;
   balance: string;
   createdAt: number;
+}
+
+// Wallet features support matrix
+export interface WalletFeatures {
+  crossChainMessaging: boolean;
+  transactionSigning: boolean;
+  nativeLinera: boolean;
+  mobile: boolean;
+}
+
+// Get features for each wallet type
+export function getWalletFeatures(type: WalletType): WalletFeatures {
+  switch (type) {
+    case 'demo':
+      return { crossChainMessaging: true, transactionSigning: false, nativeLinera: false, mobile: false };
+    case 'linera':
+      return { crossChainMessaging: true, transactionSigning: true, nativeLinera: true, mobile: false };
+    case 'checko':
+      return { crossChainMessaging: true, transactionSigning: true, nativeLinera: true, mobile: false };
+    case 'croissant':
+      return { crossChainMessaging: true, transactionSigning: true, nativeLinera: true, mobile: true };
+    case 'metamask':
+      return { crossChainMessaging: false, transactionSigning: true, nativeLinera: false, mobile: false };
+    default:
+      return { crossChainMessaging: false, transactionSigning: false, nativeLinera: false, mobile: false };
+  }
 }
 
 declare global {

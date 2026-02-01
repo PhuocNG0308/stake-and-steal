@@ -41,6 +41,7 @@ export default function Raid() {
     createTestVictim,
     removeTestVictim,
     executeRaid,
+    executeRaidOnChain,
     discoverNetworkPlayers,
   } = useGameData()
   const { settings } = useTestSettings()
@@ -91,10 +92,21 @@ export default function Raid() {
 
     setPhase('executing')
 
+    // Check if this is a network player (cross-chain raid)
+    const isNetworkPlayer = networkPlayers.some(p => p.id === selectedVictim.id)
+
     // Simulate execution delay
     setTimeout(() => {
-      const result = executeRaid(selectedVictim.id, selectedPlot)
-      setRaidResult(result)
+      // Use the appropriate raid function
+      const result = isNetworkPlayer 
+        ? executeRaidOnChain(selectedVictim.id, selectedPlot)
+        : executeRaid(selectedVictim.id, selectedPlot)
+      
+      setRaidResult({
+        success: result.success,
+        amount: result.amount,
+        blockedByShield: result.blockedByShield
+      })
       setPhase('result')
     }, 1500)
   }

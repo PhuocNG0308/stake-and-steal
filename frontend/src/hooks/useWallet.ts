@@ -9,7 +9,6 @@ import {
   signWithDemoWallet, 
   clearDemoWallet,
   loadDemoWallet,
-  updateDemoWalletBalance,
   hasDemoWallet 
 } from '@/lib/demo-wallet';
 import { 
@@ -19,6 +18,24 @@ import {
   isLineraWalletAvailable,
   checkLineraConnection
 } from '@/lib/linera-wallet';
+import {
+  connectCheCko,
+  disconnectCheCko,
+  signWithCheCko,
+  isCheCkoAvailable,
+  checkCheCkoConnection,
+  onCheCkoAccountChange,
+  onCheCkoDisconnect
+} from '@/lib/checko-wallet';
+import {
+  connectCroissant,
+  disconnectCroissant,
+  signWithCroissant,
+  isCroissantAvailable,
+  checkCroissantConnection,
+  onCroissantAccountChange,
+  onCroissantDisconnect
+} from '@/lib/croissant-wallet';
 import {
   connectMetaMask,
   signWithMetaMask,
@@ -190,6 +207,20 @@ export function useWallet() {
           connection = await connectLineraWallet();
           break;
 
+        case 'checko':
+          if (!isCheCkoAvailable()) {
+            throw new Error('CheCko wallet not found. Please install the CheCko browser extension from https://checko.linera.io');
+          }
+          connection = await connectCheCko();
+          break;
+
+        case 'croissant':
+          if (!isCroissantAvailable()) {
+            throw new Error('Croissant wallet not found. Please install Croissant from your app store or browser.');
+          }
+          connection = await connectCroissant();
+          break;
+
         case 'metamask':
           if (!isMetaMaskAvailable()) {
             throw new Error('MetaMask not found. Please install the extension.');
@@ -249,6 +280,12 @@ export function useWallet() {
         case 'linera':
           await disconnectLineraWallet();
           break;
+        case 'checko':
+          await disconnectCheCko();
+          break;
+        case 'croissant':
+          await disconnectCroissant();
+          break;
         case 'metamask':
           // MetaMask doesn't have a native disconnect
           break;
@@ -280,6 +317,10 @@ export function useWallet() {
         return signWithDemoWallet(message);
       case 'linera':
         return signWithLineraWallet(message);
+      case 'checko':
+        return signWithCheCko(message);
+      case 'croissant':
+        return signWithCroissant(message);
       case 'metamask':
         return signWithMetaMask(message);
       default:
@@ -333,6 +374,8 @@ export function useWallet() {
     requestFaucet,
     clearDemoData,
     isLineraAvailable: isLineraWalletAvailable(),
+    isCheCkoAvailable: isCheCkoAvailable(),
+    isCroissantAvailable: isCroissantAvailable(),
     isMetaMaskAvailable: isMetaMaskAvailable(),
   };
 }
