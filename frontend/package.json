@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "type-check": "tsc",
-    "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "codegen": "graphql-codegen --config codegen.yml"
+    "dev": "npx vite",
+    "build": "npx vite build",
+    "type-check": "npx tsc",
+    "preview": "npx vite preview",
+    "lint": "npx eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "codegen": "npx graphql-codegen --config codegen.yml"
   },
   "dependencies": {
     "@apollo/client": "^3.8.8",
